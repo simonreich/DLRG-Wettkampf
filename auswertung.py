@@ -949,7 +949,7 @@ def erstellePDFs():
 
     rownum = 0
     for row in dataInputTemplate:
-        if row.find("<template:ergebnisliste1>") != -1:
+        if row.find("<template:ergebnisliste>") != -1:
             del dataInputTemplate[rownum]
 
             # Pruefen, ob die Tabelle auf eine Seite passt.
