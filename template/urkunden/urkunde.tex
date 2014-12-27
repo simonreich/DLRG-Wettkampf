@@ -1,0 +1,114 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[ngerman]{babel}
+\usepackage{graphicx}
+\usepackage{wallpaper}
+\usepackage[]{units}
+\usepackage{datatool}
+\usepackage[left=1cm, right=1cm, top=0.5cm, bottom=1cm, includeheadfoot]{geometry}
+\usepackage{ifthen}
+\usepackage{xifthen}
+
+
+% Unterschrift
+\newcommand*{\SignatureAndDate}[1]{%
+    \par\noindent \hfill\makebox[6cm]{\hrulefill}%
+    \par\noindent \hfill\makebox[6cm][l]{#1}%
+}%
+
+% Zeiten
+\newcommand*{\PrintTime}[1]
+{%
+	\ifthenelse
+		{\DTLisieq{#1}{}}
+		{-}
+		{\unit[#1]{s}}
+}%
+
+
+\begin{document}
+
+
+% Datenbank mit Zeiten laden
+\DTLloaddb{names}{
+<template:dateistammdaten>
+}
+
+% keine Seitennummerierung
+\pagestyle{empty}
+
+% Spalten der Datenbank laden
+\DTLforeach{names}
+{<template:stammdaten>}{
+
+% Hintergrundbild
+\ThisLRCornerWallPaper{1.0}{./template/urkunden/figures/schwimmer.jpg}
+
+% Header
+\begin{minipage}[l]{3cm}%
+	\includegraphics[width=0.9\textwidth]{./template/urkunden/figures/logo_adler_blau.jpg}
+\end{minipage}%
+\hfill
+\begin{minipage}[r]{15cm}%
+	\centering
+	\fontsize{60}{40} \selectfont{ \makebox[\textwidth][s]{U R K U N D E} \par}
+\end{minipage}
+
+
+\vspace{1cm}
+
+
+% Ueberschrift
+\begin{center}
+	\fontsize{40}{36} \selectfont{1. Neujahrs-Pokal}\\
+	\vspace{1cm}
+	\fontsize{30}{24} \selectfont{DLRG Ortsgruppe G\"ottingen}
+\end{center}
+
+
+\vspace{1cm}
+
+
+% Name und Platz
+\begin{center}
+	\fontsize{30}{24} \selectfont{{\dvorname} {\dnachname}}\\
+	\vspace{1cm}
+	\fontsize{30}{24} \selectfont{Platz {\daltersklasseplatz} in der Altersklasse {\daltersklasse}}
+\end{center}
+
+
+\vspace{1cm}
+
+
+% Liste mit Zeiten
+\begin{center}
+<template:wettkampfliste>
+\end{center}
+
+
+%\begin{center}
+%	\begin{tabular}{ l r | l r }
+%		WK 1: \unit[25]{m} Brust					& \PrintTime{{\dwkeins}} & WK 9: \unit[50]{m} Retten					& \PrintTime{{\dwkneun}}\\
+%		WK 2: \unit[25]{m} Freistil					& \PrintTime{{\dwkzwei}} & WK 10: \unit[100]{m} Retten				& \PrintTime{{\dwkzehn}}\\
+%		WK 3: \unit[25]{m} Freistil mit Leine		& \PrintTime{{\dwkdrei}} & WK 11: \unit[50]{m} Delphin				& \PrintTime{{\dwkelf}}\\
+%		WK 4: \unit[50]{m} Kombiniertes Schwimmen	& \PrintTime{{\dwkvier}} & WK 12: \unit[100]{m} Retten mit Flossen	& \PrintTime{{\dwkzwoelf}}\\
+%		WK 5: \unit[25]{m} Freistil mit Flossen		& \PrintTime{{\dwkfuenf}} & WK 13: \unit[50]{m} Brust					& \PrintTime{{\dwkdreizehn}}\\
+%		WK 6: \unit[50]{m} Freistil mit Flossen		& \PrintTime{{\dwksechs}} & WK 14: \unit[50]{m} Freistil				& \PrintTime{{\dwkvierzehn}}\\
+%		WK 7: \unit[4x25]{m} Familienstaffel		& \PrintTime{{\dwksieben}} & WK 15: \unit[100]{m} Lagen				& \PrintTime{{\dwkfuenfzehn}}\\
+%		WK 8: \unit[100]{m} Freistil mit Flossen	& \PrintTime{{\dwkacht}} & & \\
+%	\end{tabular}
+%\end{center}
+
+
+\vspace{1cm}
+
+
+\SignatureAndDate{18.01.2015, Rolf Nietzold}
+
+
+\pagebreak
+} % datatool
+\end{document}
