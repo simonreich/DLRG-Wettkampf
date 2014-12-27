@@ -94,9 +94,6 @@ def sanityCheckInputfiles(typeOfTest):
                     3 fuer Test von 1, 2 und
                       fileInputUrkunde und fileInputErgebnisliste
     """
-                        
-                      
-
     if os.path.exists(fileInputRekorde) == False:
         print("Die Datei " + fileInputRekorde + " existiert nicht.")
         return 1
@@ -195,7 +192,6 @@ def sanityCheckInputfiles(typeOfTest):
             fileInputStammdaten + "\n" + \
             "ist eine unterschiedliche Anzahl an Wettkämpfen eingetragen.")
         return 1
-
 
     if os.path.isdir(fileOutputFolder) == False:
         print("Der Ordner " + fileOutputFolder + " existiert nicht.")
@@ -1153,50 +1149,59 @@ def erstellePDFs():
         return 1
 
 
-    ######################################################
-    # Aufraeumen
+# main function
+def main(argv=None):
+    """ main function
+        argv: possible arguments, will be replaced by sys.argv if none are 
+              given.
+    """
+    if argv is None:
+        argv = sys.argv
+
+    for arg in argv:
+        if (arg == "-h" or
+                arg == "-help" or
+                arg == "--help" or
+                arg == "--hilfe" or
+                arg == "-?" or
+                arg == "?"):
+            printHilfe(sys.argv[0])
+
+        elif (arg == "--erstelle-stammdaten" or
+                arg == "-es"):
+            return_value = erstelleStammdaten()
+            if return_value != 0:
+                sys.exit(return_value)
+
+        elif (arg == "--erstelle-rekorde-beispiel" or
+                arg == "-er"):
+            return_value = erstelleRekordeBeispiel()
+            if return_value != 0:
+                sys.exit(return_value)
+
+        elif (arg == "--erstelle-wettkampfliste-beispiel" or
+                arg == "-ew"):
+            return_value = erstelleWettkampflisteBeispiel()
+            if return_value != 0:
+                sys.exit(return_value)
+
+        elif (arg == "--erstelle-urkunden" or
+                arg == "-eu"):
+            return_value = berechneUrkunden()
+            if return_value != 0:
+                sys.exit(return_value)
+            return_value = erstellePDFs()
+            if return_value != 0:
+                sys.exit(return_value)
+
+        elif (len(sys.argv) == 1):
+            return_value = printHilfe(sys.argv[0])
+            if return_value != 0:
+                sys.exit(return_value)
+
+    # Ende
+    sys.exit(0)
 
 
-for arg in sys.argv:
-    if (arg == "-h" or
-            arg == "-help" or
-            arg == "--help" or
-            arg == "--hilfe" or
-            arg == "-?" or
-            arg == "?"):
-        printHilfe(sys.argv[0])
-
-    elif (arg == "--erstelle-stammdaten" or
-            arg == "-es"):
-        return_value = erstelleStammdaten()
-        if return_value != 0:
-            sys.exit(return_value)
-
-    elif (arg == "--erstelle-rekorde-beispiel" or
-            arg == "-er"):
-        return_value = erstelleRekordeBeispiel()
-        if return_value != 0:
-            sys.exit(return_value)
-
-    elif (arg == "--erstelle-wettkampfliste-beispiel" or
-            arg == "-ew"):
-        return_value = erstelleWettkampflisteBeispiel()
-        if return_value != 0:
-            sys.exit(return_value)
-
-    elif (arg == "--erstelle-urkunden" or
-            arg == "-eu"):
-        return_value = berechneUrkunden()
-        if return_value != 0:
-            sys.exit(return_value)
-        return_value = erstellePDFs()
-        if return_value != 0:
-            sys.exit(return_value)
-
-    elif (len(sys.argv) == 1):
-        return_value = printHilfe(sys.argv[0])
-        if return_value != 0:
-            sys.exit(return_value)
-
-
-sys.exit(0)
+if __name__ == "__main__":
+    main()
