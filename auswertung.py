@@ -47,8 +47,12 @@ fileOutputAlpha="out/namelist_alpha.csv"
 # Dateinamen der zu speichernden Ergebnislisten, nach Gesamtplatz sortiert
 fileOutputGesamtplatz="out/namelist_gesamt.csv"
 
-# Dateinamen der zu speichernden Ergebnislisten, nach Altersklassenplatz sortiert
+# Dateinamen der zu speichernden Ergebnislisten, nach Altersklassenplatz
+# sortiert
 fileOutputAlstersklasseplatz="out/namelist_altersklasse.csv"
+
+# Ordner fuer Outputdateien
+fileOutputFolder="out"
 
 # Dateinamen der zu speichernden Beispiel-Wettkampflisten
 fileOutputWettkampflisteBeispiel="in/wettkampfliste-beispiel.csv"
@@ -71,6 +75,150 @@ import os.path
 import subprocess
 
 
+# Stammdaten
+global dataInputStammdatenHeader
+global dataInputAnzahlStammdaten
+dataInputStammdatenHeader = ["Nummer", "Vorname", "Nachname", "Geburtsdatum", \
+    "Mail", "Teamname"]
+dataInputAnzahlStammdaten = len(dataInputStammdatenHeader)
+
+
+def sanityCheckInputfiles(typeOfTest):
+    """ Prueft, ob die Inputdaten korrekt formatiert sind
+        typeOfTest: prueft wieviel getestet werden soll
+                    erlaubt sind
+                    1 fuer Test von fileInputRekorde und
+                      fileInputWettkampfliste
+                    2 fuer Test von 1 und
+                      fileInputStammdaten
+                    3 fuer Test von 1, 2 und
+                      fileInputUrkunde und fileInputErgebnisliste
+    """
+                        
+                      
+
+    if os.path.exists(fileInputRekorde) == False:
+        print("Die Datei " + fileInputRekorde + " existiert nicht.")
+        return 1
+    if os.path.exists(fileInputWettkampfliste) == False:
+        print("Die Datei " + fileInputWettkampfliste + " existiert nicht.")
+        return 1
+
+    # Rekorde
+    fileInputHandle = open(fileInputRekorde, 'rt')
+    fileInputReader = csv.reader (fileInputHandle)
+    
+    dataInputRekorde = [[0 for x in range(0)] for x in range(0)]
+    dataInputRekordeHeader = []
+    
+    rownum=0
+    for row in fileInputReader:
+        if rownum == 0:
+            dataInputRekordeHeader = row
+        else:
+            dataInputRekorde.append(row)
+        rownum += 1
+
+    dataInputRekordeAnzahlWK = len(dataInputRekordeHeader)-1
+
+    if dataInputRekordeAnzahlWK <= 0:
+        print("Die Datei " + fileInputRekorde + " enthält zu wenig Wettkämpfe.")
+        return 1
+    if len(dataInputRekorde) <= 0:
+        print("Die Datei " + fileInputRekorde + " enthält zu wenig "
+            "Altersklassen.")
+        return 1
+
+    # Wettkampfliste
+    fileInputHandle = open(fileInputWettkampfliste, 'rt')
+    fileInputReader = csv.reader (fileInputHandle)
+    
+    dataInputWettkampfliste = [[0 for x in range(0)] for x in range(0)]
+    dataInputWettlampflisteHeader = []
+    
+    rownum=0
+    for row in fileInputReader:
+        if rownum == 0:
+            dataInputWettkampflisteHeader = row
+        else:
+            dataInputWettkampfliste.append(row)
+        rownum += 1
+
+    dataInputWettkampflisteAnzahlWK = rownum-1
+
+    if dataInputWettkampflisteAnzahlWK <= 0:
+        print("Die Datei " + fileInputWettkampfliste + " enthält zu wenig "
+            "Wettkämpfe.")
+        return 1
+
+    if dataInputRekordeAnzahlWK != dataInputWettkampflisteAnzahlWK:
+        print("In den Dateien \n" + fileInputWettkampfliste + "\n" + \
+            fileInputRekorde + "\nist eine unterschiedliche Anzahl an "
+            "Wettkämpfen eingetragen.")
+        return 1
+
+
+    # Ende von Test 1
+    if typeOfTest == 1:
+        return 0
+
+
+    if os.path.exists(fileInputStammdaten) == False:
+        print("Die Datei " + fileInputStammdaten+ " existiert nicht.")
+        return 1
+
+    # Stammdaten
+    fileInputHandle = open(fileInputStammdaten, 'rt')
+    fileInputReader = csv.reader (fileInputHandle)
+    
+    dataInputStammdaten = [[0 for x in range(0)] for x in range(0)]
+    dataInputStammdatenHeader = []
+    
+    rownum=0
+    for row in fileInputReader:
+        if rownum == 0:
+            dataInputStammdatenHeader = row
+        else:
+            dataInputStammdaten.append(row)
+
+    dataInputStammdatenAnzahlWK = \
+        len(dataInputStammdatenHeader)-dataInputAnzahlStammdaten
+
+    if dataInputStammdatenAnzahlWK <= 0:
+        print("Die Datei " + fileInputStammdaten + " enthält zu wenig"
+        "Wettkämpfe.")
+        return 1
+    if dataInputRekordeAnzahlWK != dataInputStammdatenAnzahlWK:
+        print("In den Dateien \n" + \
+            fileInputWettkampfliste + "\n" + \
+            fileInputRekorde + "\n" + \
+            fileInputStammdaten + "\n" + \
+            "ist eine unterschiedliche Anzahl an Wettkämpfen eingetragen.")
+        return 1
+
+
+    if os.path.isdir(fileOutputFolder) == False:
+        print("Der Ordner " + fileOutputFolder + " existiert nicht.")
+        return 1
+
+
+    # Ende von Test 2
+    if typeOfTest == 2:
+        return 0
+
+
+    if os.path.exists(fileInputUrkunde) == False:
+        print("Die Datei " + fileInputUrkunde + " existiert nicht.")
+        return 1
+    if os.path.exists(fileInputErgebnisliste) == False:
+        print("Die Datei " + fileInputErgebnisliste + " existiert nicht.")
+        return 1
+
+
+    # Ende von Test 3
+    return 0
+
+
 def sort_table_high(table, cols):
     """ sort a table by multiple columns, first element is highest
         table: a list of lists (or tuple of tuples) where each inner list 
@@ -82,6 +230,7 @@ def sort_table_high(table, cols):
         table = sorted(table, key=operator.itemgetter(col))
     table.reverse()
     return table
+
 
 def sort_table_low(table, cols):
     """ sort a table by multiple columns, first element is lowest
@@ -102,7 +251,8 @@ def berechneAltersklasse (born):
     """
     date_object = datetime.strptime(born, '%d.%m.%Y')
     today = date.today()
-    age_year = today.year - date_object.year - ((today.month, today.day) < (date_object.month, date_object.day))
+    age_year = today.year - date_object.year - \
+        ((today.month, today.day) < (date_object.month, date_object.day))
     if age_year > 18:
         return "offen"
     else:
@@ -233,6 +383,7 @@ def printHilfe (programname):
 
     print(hilfeText)
 
+    return 0
 
 
 # Erstelle Beispieldatei fuer Wettkampfliste
@@ -240,16 +391,28 @@ def erstelleWettkampflisteBeispiel():
     """ Erstellt eine Datei, die Beispieldaten fuer eine Wettkampfliste
         beinhaltet.
     """
-    print("Es wird eine Beispieldatei nach " + fileOutputWettkampflisteBeispiel + " geschrieben.")
-    print("Dort befinden sich Beispiele für die Datei " + fileInputWettkampfliste + ".")
-    dataOutput = [["Distanz", "Einheit", "Schwimmstil"], [50, "m", "Delphin"], [50, "m", "Rücken"], [50, "m", "Brust"], [50, "m", "Freistil"], [100, "m", "Lagen"]]
+    print("Es wird eine Beispieldatei nach " + \
+        fileOutputWettkampflisteBeispiel + " geschrieben.")
+    print("Dort befinden sich Beispiele für die Datei " + \
+        fileInputWettkampfliste + ".")
+    dataOutput = [["Distanz", "Einheit", "Schwimmstil"], 
+        [50, "m", "Delphin"], 
+        [50, "m", "Rücken"], 
+        [50, "m", "Brust"], 
+        [50, "m", "Freistil"], 
+        [100, "m", "Lagen"]]
     fileOutputHandle = open (fileOutputWettkampflisteBeispiel, "wt")
-    fileOutputWriter = csv.writer (fileOutputHandle, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+    fileOutputWriter = csv.writer (fileOutputHandle, 
+        delimiter=',', 
+        quotechar='"', 
+        quoting=csv.QUOTE_ALL)
 
     for row in dataOutput:
         fileOutputWriter.writerow(row)
 
     fileOutputHandle.close()
+
+    return 0
 
 
 # Erstelle Beispieldatei fuer Rekorde
@@ -257,27 +420,48 @@ def erstelleRekordeBeispiel():
     """ Erstellt eine Datei, die Beispieldaten fuer eine Rekordliste
         beinhaltet.
     """
-    print("Es wird eine Beispieldatei nach " + fileOutputRekordeBeispiel + " geschrieben.")
+    print("Es wird eine Beispieldatei nach " + fileOutputRekordeBeispiel + \
+        " geschrieben.")
     print("Dort befinden sich Beispiele für die Datei " + fileInputRekorde + ".")
-    dataOutput = [["Altersklasse", "WK1", "WK2", "WK3", "WK4", "WK5"], ["5/6",10,11,12,13,14], ["7/10",8.9,7.6,4.5,11.5,30.4], ["11/14",12.4,45.5,14.5,17.6,12.4], ["15/16",10.4,12.3,14.4,15.6,17.5], ["17/10",12.3,14.5,15.6,16.7,18.9], ["offen",20,20,20,20,40]]
+    dataOutput = [["Altersklasse", "WK1", "WK2", "WK3", "WK4", "WK5"], 
+        ["5/6",10,11,12,13,14], 
+        ["7/10",8.9,7.6,4.5,11.5,30.4], 
+        ["11/14",12.4,45.5,14.5,17.6,12.4], 
+        ["15/16",10.4,12.3,14.4,15.6,17.5], 
+        ["17/10",12.3,14.5,15.6,16.7,18.9], 
+        ["offen",20,20,20,20,40]]
     fileOutputHandle = open (fileOutputRekordeBeispiel, "wt")
-    fileOutputWriter = csv.writer (fileOutputHandle, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+    fileOutputWriter = csv.writer (fileOutputHandle, 
+        delimiter=',', 
+        quotechar='"', 
+        quoting=csv.QUOTE_ALL)
 
     for row in dataOutput:
         fileOutputWriter.writerow(row)
 
     fileOutputHandle.close()
 
+    return 0
+
 
 # Erstelle Stammdaten template
 def erstelleStammdaten():
     """ Erstellt eine Datei, die eine leere Stammdatenbank beinhaltet.
     """
+
+    # Sanity Check der Input Daten
+    if sanityCheckInputfiles(1) != 0:
+        return 1
+
+    if os.path.exists(fileInputWettkampfliste) == False:
+        print("Die Datei " + fileInputWettkampfliste + " existiert nicht.")
+        return 1
+
     if os.path.exists(fileInputStammdaten) == True:
         print("Die Datei " + fileInputStammdaten + " existiert bereits.")
-        return
+        return 1
 
-    dataOutput = ["Nummer", "Vorname", "Nachname", "Geburtsdatum", "Mail", "Teamname"]
+    dataOutput = dataInputStammdatenHeader
 
     # Oeffne Wettkampfliste und erstelle Liste
     fileInputHandle = open(fileInputWettkampfliste, 'rt')
@@ -297,11 +481,19 @@ def erstelleStammdaten():
 
     # Daten speichern
     fileOutputHandle = open (fileInputStammdaten, "wt")
-    fileOutputWriter = csv.writer (fileOutputHandle, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+    fileOutputWriter = csv.writer (fileOutputHandle, 
+        delimiter=',', 
+        quotechar='"', 
+        quoting=csv.QUOTE_ALL)
 
     fileOutputWriter.writerow(dataOutput)
 
     fileOutputHandle.close()
+
+    print ("Die Datei" + fileInputStammdaten + \
+        " wurde ergolgreich geschrieben.")
+
+    return 0
 
 
 # Erstelle Stammdaten template
@@ -309,11 +501,16 @@ def berechneUrkunden():
     """ Berechnet Punkte und Ranking und benutzt anschliessend
         pdflatex, um Urkunden zu erstellen
     """
+
+    # Sanity Check der Input Daten
+    if sanityCheckInputfiles(2) != 0:
+        return 1
+
     ######################################################
     # Oeffne Datei und lade csv
     if os.path.exists(fileInputStammdaten) == False:
         print("Die Datei " + fileInputStammdaten + " existiert nicht.")
-        return
+        return 1
 
     print ("Lade Datei", fileInputStammdaten)
     
@@ -345,7 +542,7 @@ def berechneUrkunden():
     # Rekorde
     if os.path.exists(fileInputRekorde) == False:
         print("Die Datei " + fileInputRekorde + " existiert nicht.")
-        return
+        return 1
 
     fileInputHandle = open(fileInputRekorde, 'rt')
     fileInputReader = csv.reader (fileInputHandle)
@@ -371,7 +568,6 @@ def berechneUrkunden():
     # Anzahl der Wettkaempfe
     global dataInputAnzahlWK
     dataInputAnzahlWK = 0
-    dataInputAnzahlStammdaten = 6
     
     # Lese Anzahl der Wettkaempfe
     for row in dataInput:
@@ -379,7 +575,7 @@ def berechneUrkunden():
 
     if os.path.exists(fileInputWettkampfliste) == False:
         print("Die Datei " + fileInputWettkampfliste + " existiert nicht.")
-        return
+        return 1
 
     fileInputHandle = open(fileInputWettkampfliste, 'rt')
     fileInputReader = csv.reader (fileInputHandle)
@@ -392,9 +588,6 @@ def berechneUrkunden():
     fileInputHandle.close ()
 
     dataInputAnzahlWK = rownum-1
-    
-    
-    ######################################################
     
     
     ######################################################
@@ -429,7 +622,11 @@ def berechneUrkunden():
     
         dataOutputPunkteRow = []
         for colnum in range(dataInputAnzahlWK):
-            dataOutputPunkteRow.append(berechnePunkte(row[colnum+dataInputAnzahlStammdaten], dataRekordeRow[colnum+1]))
+            dataOutputPunkteRow.append(
+                berechnePunkte(
+                    row[colnum+dataInputAnzahlStammdaten], 
+                    dataRekordeRow[colnum+1])
+                )
         
         dataOutputPunkte.append(dataOutputPunkteRow)
     
@@ -455,9 +652,6 @@ def berechneUrkunden():
         else:
             punkte = 0
 
-        #if counter >= 3:
-        #    print (sorted(row)[-1], sorted(row)[-1]
-
         # auf zwei Nachkommastellen runden
         punkte = float("{0:.2f}".format(punkte))
 
@@ -475,24 +669,28 @@ def berechneUrkunden():
     dataOuputHeader.insert (dataInputAnzahlStammdaten, "Altersklasse")
     rownum = 0
     for row in dataOutput:
-        dataOutput[rownum].insert (dataInputAnzahlStammdaten, dataOutputAltersklasse[rownum])
+        dataOutput[rownum].insert(dataInputAnzahlStammdaten, 
+            dataOutputAltersklasse[rownum])
         rownum += 1
     
     # Gesamtpunkte hinzufuegen
     dataOuputHeader.insert (dataInputAnzahlStammdaten+1, "Gesamtpunkte")
     rownum = 0
     for row in dataOutput:
-        dataOutput[rownum].insert (dataInputAnzahlStammdaten+1, dataOutputPunkteTotal[rownum])
+        dataOutput[rownum].insert (dataInputAnzahlStammdaten+1, 
+            dataOutputPunkteTotal[rownum])
         rownum += 1
     
     # Einzelpunkte hinzufuegen
     for colnum in range(dataInputAnzahlWK):
-        dataOutputHeader.insert(dataInputAnzahlStammdaten+3+(2*colnum), dataOutputPunkteHeader[colnum])
+        dataOutputHeader.insert(dataInputAnzahlStammdaten+3+(2*colnum), 
+            dataOutputPunkteHeader[colnum])
     
     rownum = 0
     for row in dataOutput:
         for colnum in range(dataInputAnzahlWK):
-            dataOutput[rownum].insert(dataInputAnzahlStammdaten+3+(2*colnum), dataOutputPunkte[rownum][colnum])
+            dataOutput[rownum].insert(dataInputAnzahlStammdaten+3+(2*colnum), 
+                dataOutputPunkte[rownum][colnum])
         rownum += 1
         
     # Nach Gesamtpunkten sortieren, zuerst ohne Altersklassen
@@ -502,8 +700,8 @@ def berechneUrkunden():
     rownum = 0
     for row in sort_table_high(dataOutput, (dataInputAnzahlStammdaten+1, 2)):
         dataOutputGesamtplatz.append(row)
-        dataOutputGesamtplatz[rownum].insert(dataInputAnzahlStammdaten+2, rownum+1)
-    
+        dataOutputGesamtplatz[rownum].insert(dataInputAnzahlStammdaten+2, 
+            rownum+1)
         rownum += 1
     
     dataOutput = dataOutputGesamtplatz
@@ -515,7 +713,8 @@ def berechneUrkunden():
     rownum = 0
     platz = 1
     altersklasseAlt = ""
-    for row in sort_table_high(dataOutput, (dataInputAnzahlStammdaten, dataInputAnzahlStammdaten+1)):
+    for row in sort_table_high(dataOutput, (dataInputAnzahlStammdaten, 
+            dataInputAnzahlStammdaten+1)):
         dataOutputGesamtplatz.append(row)
     
         if(altersklasseAlt != row[dataInputAnzahlStammdaten]):
@@ -537,7 +736,10 @@ def berechneUrkunden():
     
     # Alphabetisch
     fileOutputHandle = open (fileOutputAlpha, "wt")
-    fileOutputWriter = csv.writer (fileOutputHandle, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+    fileOutputWriter = csv.writer (fileOutputHandle, 
+        delimiter=',', 
+        quotechar='"', 
+        quoting=csv.QUOTE_ALL)
     
     fileOutputWriter.writerow (dataOutputHeader)
     for row in sort_table_low(dataOutput, (2, 1)):
@@ -547,7 +749,10 @@ def berechneUrkunden():
     
     # Gesamtplatz
     fileOutputHandle = open (fileOutputGesamtplatz, "wt")
-    fileOutputWriter = csv.writer (fileOutputHandle, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+    fileOutputWriter = csv.writer (fileOutputHandle, 
+        delimiter=',', 
+        quotechar='"', 
+        quoting=csv.QUOTE_ALL)
     
     fileOutputWriter.writerow (dataOutputHeader)
     for row in sort_table_low(dataOutput, (dataInputAnzahlStammdaten+2, 2)):
@@ -557,13 +762,19 @@ def berechneUrkunden():
     
     # Altersklassenplatz
     fileOutputHandle = open (fileOutputAlstersklasseplatz, "wt")
-    fileOutputWriter = csv.writer (fileOutputHandle, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+    fileOutputWriter = csv.writer (fileOutputHandle, 
+        delimiter=',', 
+        quotechar='"', 
+        quoting=csv.QUOTE_ALL)
     
     fileOutputWriter.writerow (dataOutputHeader)
-    for row in sort_table_low(dataOutput, (dataInputAnzahlStammdaten, dataInputAnzahlStammdaten+3)):
+    for row in sort_table_low(dataOutput, (dataInputAnzahlStammdaten, 
+            dataInputAnzahlStammdaten+3)):
         fileOutputWriter.writerow(row)
     
     fileOutputHandle.close()
+
+    return 0
     
 
 # Erstelle Stammdaten template
@@ -572,21 +783,48 @@ def erstellePDFs():
         Die templates liegen im Ordner template/
     """
 
+    # Sanity Check der Input Daten
+    if sanityCheckInputfiles(3) != 0:
+        return 1
+
     ######################################################
     # Lade Wettkampfliste
-    dataInputWettkamplfliste = [[0 for x in range(0)] for x in range(0)]
+    if os.path.exists(fileInputWettkampfliste) == False:
+        print("Die Datei " + fileInputWettkampfliste + " existiert nicht.")
+        return 1
+
+    # Oeffne Wettkampfliste und erstelle Liste
     fileInputHandle = open(fileInputWettkampfliste, 'rt')
     fileInputReader = csv.reader (fileInputHandle)
 
     # Lade csv in Array
     rownum=0
+    dataInputWettkamplfliste = [[0 for x in range(0)] for x in range(0)]
     for row in fileInputReader:
         if rownum > 0:
             dataInputWettkamplfliste.append(row)
         rownum += 1
+    rownumTotal = rownum-1
 
     # Datei schliessen
     fileInputHandle.close ()
+
+    dataOutput = ["Nummer", "Vorname", "Nachname", "Geburtsdatum", "Mail", \
+        "Teamname"]
+
+    for rownum in range(rownumTotal):
+        dataOutput.append("WK" + str(rownum+1))
+
+    # Daten speichern
+    fileOutputHandle = open (fileInputStammdaten, "wt")
+    fileOutputWriter = csv.writer (fileOutputHandle, 
+        delimiter=',', 
+        quotechar='"', 
+        quoting=csv.QUOTE_ALL)
+
+    fileOutputWriter.writerow(dataOutput)
+
+    fileOutputHandle.close()
 
 
     ######################################################
@@ -638,7 +876,7 @@ def erstellePDFs():
     # Oeffne Urkunde Template
     if os.path.exists(fileInputUrkunde) == False:
         print("Die Datei " + fileInputUrkunde + " existiert nicht.")
-        return
+        return 1
 
     # Urkunden Template
     fileInputHandle = open(fileInputUrkunde, 'rt')
@@ -658,10 +896,16 @@ def erstellePDFs():
             dataInputTemplate.insert(rownum, fileOutputAlpha)
         elif row.find("<template:stammdaten>") != -1:
             del dataInputTemplate[rownum]
-            row1 = r"{\dnummer=Nummer, \dvorname=Vorname, \dnachname=Nachname, \dgeburtsdatum=Geburtsdatum, \dmail=Mail, \dteamname=Teamname, \daltersklasse=Altersklasse, \daltersklasseplatz=Altersklasseplatz, \dgesamtplatz=Gesamtplatz, \dgesamtpunkte=Gesamtpunkte"
+            row1 =(r"{\dnummer=Nummer, \dvorname=Vorname, \dnachname=Nachname, "
+                "\dgeburtsdatum=Geburtsdatum, \dmail=Mail, "
+                "\dteamname=Teamname, \daltersklasse=Altersklasse, "
+                "\daltersklasseplatz=Altersklasseplatz, "
+                "\dgesamtplatz=Gesamtplatz, \dgesamtpunkte=Gesamtpunkte")
             for rownum1 in range (dataInputAnzahlWK):
-                row1 = row1 + r", \dwk" + zahl2String(rownum1+1) + r"=WK" + str(rownum1+1)
-                row1 = row1 + r", \dwk" + zahl2String(rownum1+1) + r"punkte=WK" + str(rownum1+1) + r"_Punkte"
+                row1 = row1 + r", \dwk" + zahl2String(rownum1+1) + r"=WK" + \
+                    str(rownum1+1)
+                row1 = row1 + r", \dwk" + zahl2String(rownum1+1) + \
+                    r"punkte=WK" + str(rownum1+1) + r"_Punkte"
             row1 = row1 + "}{\n"
             dataInputTemplate.insert(rownum, row1)
 
@@ -681,14 +925,24 @@ def erstellePDFs():
     ######################################################
     # pdflatex aufrufen
     return_value = subprocess.call(['pdflatex', fileOutputUrkunde], shell=False)
+    if return_value != 0:
+        print("pdflatex konnte nicht aufgerufen werden. Der folgende Befehl "
+            "konnte nicht ausgeführt werden:\npdflatex " + fileOutputUrkunde)
+        return 1
     return_value = subprocess.call(['pdflatex', fileOutputUrkunde], shell=False)
+    if return_value != 0:
+        print("pdflatex konnte nicht aufgerufen werden. Der folgende Befehl "
+            "konnte nicht ausgeführt werden:\npdflatex " + fileOutputUrkunde)
+        return 1
+        
+        
 
 
     ######################################################
     # Oeffne Ergebnisliste Template
     if os.path.exists(fileInputErgebnisliste) == False:
         print("Die Datei " + fileInputErgebnisliste + " existiert nicht.")
-        return
+        return 1
 
     # Urkunden Template
     fileInputHandle = open(fileInputErgebnisliste, 'rt')
@@ -710,21 +964,34 @@ def erstellePDFs():
                     row1 += r" | r r"
                 row1 = row1 + "}\n"
                 # Ueberschrift
-                row1 += "Nr & Vorname & Nachname & Team & AK & AK-P & Ges-P & Pkt"
+                row1 += ("Nr & Vorname & Nachname & Team & AK & AK-P & Ges-P & "
+                    "Pkt")
                 for rownum1 in range(dataInputAnzahlWK):
-                    row1 = row1 + r" & \multicolumn{2}{|c}{WK " + str(rownum1+1) + r"}"
+                    row1 = row1 + r" & \multicolumn{2}{|c}{WK " + \
+                        str(rownum1+1) + r"}"
                 row1 += "\\\\ \hline\n"
                 # Tabelle
-                row1 += r"\DTLloaddb{names}{" + fileOutputAlstersklasseplatz + "}\n"
+                row1 += r"\DTLloaddb{names}{" + fileOutputAlstersklasseplatz + \
+                    "}\n"
                 row1 += r"\DTLforeach{names}{"
-                row1 += r"\dnummer=Nummer, \dvorname=Vorname, \dnachname=Nachname, \dgeburtsdatum=Geburtsdatum, \dmail=Mail, \dteamname=Teamname, \daltersklasse=Altersklasse, \daltersklasseplatz=Altersklasseplatz, \dgesamtplatz=Gesamtplatz, \dgesamtpunkte=Gesamtpunkte"
+                row1 += (r"\dnummer=Nummer, \dvorname=Vorname, "
+                    "\dnachname=Nachname, \dgeburtsdatum=Geburtsdatum, "
+                    "\dmail=Mail, \dteamname=Teamname, "
+                    "\daltersklasse=Altersklasse, "
+                    "\daltersklasseplatz=Altersklasseplatz, "
+                    "\dgesamtplatz=Gesamtplatz, \dgesamtpunkte=Gesamtpunkte")
                 for rownum1 in range (dataInputAnzahlWK):
-                    row1 += r", \dwk" + zahl2String(rownum1+1) + r"=WK" + str(rownum1+1)
-                    row1 += r", \dwk" + zahl2String(rownum1+1) + r"punkte=WK" + str(rownum1+1) + r"_Punkte"
+                    row1 += r", \dwk" + zahl2String(rownum1+1) + r"=WK" + \
+                        str(rownum1+1)
+                    row1 += r", \dwk" + zahl2String(rownum1+1) + \
+                        r"punkte=WK" + str(rownum1+1) + r"_Punkte"
                 row1 += "}{\n"
-                row1 += r"\dnummer & \dvorname & \dnachname & \dteamname & \daltersklasse & \daltersklasseplatz & \dgesamtplatz & \dgesamtpunkte"
+                row1 += (r"\dnummer & \dvorname & \dnachname & \dteamname & "
+                    "\daltersklasse & \daltersklasseplatz & \dgesamtplatz & "
+                    "\dgesamtpunkte")
                 for rownum1 in range (dataInputAnzahlWK):
-                    row1 += r"& \PrintTime{\dwk" + zahl2String(rownum1+1) + r"} & \dwk" + zahl2String(rownum1+1) + r"punkte"
+                    row1 += r"& \PrintTime{\dwk" + zahl2String(rownum1+1) + \
+                        r"} & \dwk" + zahl2String(rownum1+1) + r"punkte"
                 row1 += "\\\\\n}\n"
                 # Footer Tabelle
                 row1 += "\end{longtable}\n"
@@ -732,7 +999,8 @@ def erstellePDFs():
                 dataInputTemplate.insert(rownum, row1)
             else:
                 # Erste Seite
-                dataInputAnzahlWKSeite1 = 6       # 0, ..., 5 Es passen 6 WK auf die erste Seite
+                # 0, ..., 5 Es passen 6 WK auf die erste Seite
+                dataInputAnzahlWKSeite1 = 6 
                 # Header Tabelle
                 row1 = r"\begin{longtable}{"
                 row1 += r"p{0.5cm} l l l l c c | r"
@@ -740,21 +1008,34 @@ def erstellePDFs():
                     row1 += r" | r r"
                 row1 = row1 + "}\n"
                 # Ueberschrift
-                row1 += "Nr & Vorname & Nachname & Team & AK & AK-P & Ges-P & Pkt"
+                row1 += ("Nr & Vorname & Nachname & Team & AK & AK-P & Ges-P & "
+                    "Pkt")
                 for rownum1 in range(dataInputAnzahlWKSeite1):
-                    row1 = row1 + r" & \multicolumn{2}{|c}{WK " + str(rownum1+1) + r"}"
+                    row1 = row1 + r" & \multicolumn{2}{|c}{WK " + \
+                        str(rownum1+1) + r"}"
                 row1 += "\\\\ \hline\n"
                 # Tabelle
-                row1 += r"\DTLloaddb{names}{" + fileOutputAlstersklasseplatz + "}\n"
+                row1 += r"\DTLloaddb{names}{" + fileOutputAlstersklasseplatz + \
+                    "}\n"
                 row1 += r"\DTLforeach{names}{"
-                row1 += r"\dnummer=Nummer, \dvorname=Vorname, \dnachname=Nachname, \dgeburtsdatum=Geburtsdatum, \dmail=Mail, \dteamname=Teamname, \daltersklasse=Altersklasse, \daltersklasseplatz=Altersklasseplatz, \dgesamtplatz=Gesamtplatz, \dgesamtpunkte=Gesamtpunkte"
+                row1 += (r"\dnummer=Nummer, \dvorname=Vorname, "
+                    "\dnachname=Nachname, \dgeburtsdatum=Geburtsdatum, "
+                    "\dmail=Mail, \dteamname=Teamname, "
+                    "\daltersklasse=Altersklasse, "
+                    "\daltersklasseplatz=Altersklasseplatz, "
+                    "\dgesamtplatz=Gesamtplatz, \dgesamtpunkte=Gesamtpunkte")
                 for rownum1 in range (dataInputAnzahlWK):
-                    row1 += r", \dwk" + zahl2String(rownum1+1) + r"=WK" + str(rownum1+1)
-                    row1 += r", \dwk" + zahl2String(rownum1+1) + r"punkte=WK" + str(rownum1+1) + r"_Punkte"
+                    row1 += r", \dwk" + zahl2String(rownum1+1) + r"=WK" + \
+                        str(rownum1+1)
+                    row1 += r", \dwk" + zahl2String(rownum1+1) + \
+                        r"punkte=WK" + str(rownum1+1) + r"_Punkte"
                 row1 += "}{\n"
-                row1 += r"\dnummer & \dvorname & \dnachname & \dteamname & \daltersklasse & \daltersklasseplatz & \dgesamtplatz & \dgesamtpunkte"
+                row1 += (r"\dnummer & \dvorname & \dnachname & \dteamname & "
+                    "\daltersklasse & \daltersklasseplatz & \dgesamtplatz & "
+                    "\dgesamtpunkte")
                 for rownum1 in range (dataInputAnzahlWKSeite1):
-                    row1 += r"& \PrintTime{\dwk" + zahl2String(rownum1+1) + r"} & \dwk" + zahl2String(rownum1+1) + r"punkte"
+                    row1 += r"& \PrintTime{\dwk" + zahl2String(rownum1+1) + \
+                        r"} & \dwk" + zahl2String(rownum1+1) + r"punkte"
                 row1 += "\\\\\n}\n"
                 # Footer Tabelle
                 row1 += "\end{longtable}\n"
@@ -764,18 +1045,22 @@ def erstellePDFs():
                 # 11 WK auf jede kommende Seite
                 dataInputAnzahlWKSeite2 = 11
     
-                temp = (dataInputAnzahlWK-dataInputAnzahlWKSeite1)/dataInputAnzahlWKSeite2 + 1
+                temp = (dataInputAnzahlWK-dataInputAnzahlWKSeite1)/ \
+                    dataInputAnzahlWKSeite2 + 1
                 for tablenr in range(int(temp)):
                     # Variablen
 
                     # Erster Wettkampf jeder Tabelle
-                    dataInputAnzahlWKSeite2Offset = dataInputAnzahlWKSeite1 + tablenr*dataInputAnzahlWKSeite2
+                    dataInputAnzahlWKSeite2Offset = dataInputAnzahlWKSeite1 + \
+                        tablenr*dataInputAnzahlWKSeite2
 
                     # Anzahl der Wettkaempfe pro Seite
-                    if dataInputAnzahlWK-dataInputAnzahlWKSeite2Offset > dataInputAnzahlWKSeite2:
+                    if dataInputAnzahlWK-dataInputAnzahlWKSeite2Offset > \
+                            dataInputAnzahlWKSeite2:
                         dataInputAnzahlWKSeite2Print = dataInputAnzahlWKSeite2
                     else:
-                        dataInputAnzahlWKSeite2Print = dataInputAnzahlWK - dataInputAnzahlWKSeite2Offset
+                        dataInputAnzahlWKSeite2Print = \
+                            dataInputAnzahlWK - dataInputAnzahlWKSeite2Offset
 
                     # page break
                     row1 += "\n\n\\newpage\n\n\n"
@@ -791,22 +1076,46 @@ def erstellePDFs():
                     # Ueberschrift
                     for rownum1 in range(dataInputAnzahlWKSeite2Print):
                         if rownum1 == 0:
-                            row1 = row1 + r"\multicolumn{2}{c}{WK " + str(rownum1+dataInputAnzahlWKSeite2Offset+1) + r"}"
+                            row1 = row1 + r"\multicolumn{2}{c}{WK " + \
+                                str(rownum1+dataInputAnzahlWKSeite2Offset+1) + \
+                                r"}"
                         else:
-                            row1 = row1 + r" & \multicolumn{2}{|c}{WK " + str(rownum1+dataInputAnzahlWKSeite2Offset+1) + r"}"
+                            row1 = row1 + r" & \multicolumn{2}{|c}{WK " + \
+                                str(rownum1+dataInputAnzahlWKSeite2Offset+1) + \
+                                r"}"
                     row1 += "\\\\ \hline\n"
                     # Tabelle
                     row1 += r"\DTLforeach{names}{"
-                    row1 += r"\dnummer=Nummer, \dvorname=Vorname, \dnachname=Nachname, \dgeburtsdatum=Geburtsdatum, \dmail=Mail, \dteamname=Teamname, \daltersklasse=Altersklasse, \daltersklasseplatz=Altersklasseplatz, \dgesamtplatz=Gesamtplatz, \dgesamtpunkte=Gesamtpunkte"
+                    row1 += (r"\dnummer=Nummer, \dvorname=Vorname, "
+                        "\dnachname=Nachname, \dgeburtsdatum=Geburtsdatum, "
+                        "\dmail=Mail, \dteamname=Teamname, "
+                        "\daltersklasse=Altersklasse, "
+                        "\daltersklasseplatz=Altersklasseplatz, "
+                        "\dgesamtplatz=Gesamtplatz, "
+                        "\dgesamtpunkte=Gesamtpunkte")
                     for rownum1 in range (dataInputAnzahlWK):
-                        row1 += r", \dwk" + zahl2String(rownum1+1) + r"=WK" + str(rownum1+1)
-                        row1 += r", \dwk" + zahl2String(rownum1+1) + r"punkte=WK" + str(rownum1+1) + r"_Punkte"
+                        row1 += r", \dwk" + zahl2String(rownum1+1) + r"=WK" + \
+                            str(rownum1+1)
+                        row1 += r", \dwk" + zahl2String(rownum1+1) + \
+                            r"punkte=WK" + str(rownum1+1) + r"_Punkte"
                     row1 += "}{\n"
                     for rownum1 in range (dataInputAnzahlWKSeite2Print):
                         if rownum1 == 0:
-                            row1 += r"\PrintTime{\dwk" + zahl2String(rownum1+dataInputAnzahlWKSeite2Offset+1) + r"} & \dwk" + zahl2String(rownum1+dataInputAnzahlWKSeite2Offset+1) + r"punkte"
+                            row1 += r"\PrintTime{\dwk" + \
+                                zahl2String(
+                                    rownum1+dataInputAnzahlWKSeite2Offset+1) + \
+                                r"} & \dwk" + \
+                                zahl2String(
+                                    rownum1+dataInputAnzahlWKSeite2Offset+1) + \
+                                r"punkte"
                         else: 
-                            row1 += r" & \PrintTime{\dwk" + zahl2String(rownum1+dataInputAnzahlWKSeite2Offset+1) + r"} & \dwk" + zahl2String(rownum1+dataInputAnzahlWKSeite2Offset+1) + r"punkte"
+                            row1 += r" & \PrintTime{\dwk" + \
+                                zahl2String(\
+                                    rownum1+dataInputAnzahlWKSeite2Offset+1) + \
+                                r"} & \dwk" + \
+                                zahl2String(
+                                    rownum1+dataInputAnzahlWKSeite2Offset+1) + \
+                                r"punkte"
                     row1 += "\\\\\n}\n"
                     # Footer Tabelle
                     row1 += "\end{longtable}\n"
@@ -828,8 +1137,20 @@ def erstellePDFs():
 
     ######################################################
     # pdflatex aufrufen
-    return_value = subprocess.call(['pdflatex', fileOutputErgebnisliste], shell=False)
-    return_value = subprocess.call(['pdflatex', fileOutputErgebnisliste], shell=False)
+    return_value = subprocess.call(['pdflatex', fileOutputErgebnisliste], 
+        shell=False)
+    if return_value != 0:
+        print("pdflatex konnte nicht aufgerufen werden. Der folgende Befehl "
+            "konnte nicht ausgeführt werden:\npdflatex " + \
+            fileOutputErgebnisliste)
+        return 1
+    return_value = subprocess.call(['pdflatex', fileOutputErgebnisliste], 
+        shell=False)
+    if return_value != 0:
+        print("pdflatex konnte nicht aufgerufen werden. Der folgende Befehl "
+            "konnte nicht ausgeführt werden:\npdflatex " + \
+            fileOutputErgebnisliste)
+        return 1
 
 
     ######################################################
@@ -844,21 +1165,38 @@ for arg in sys.argv:
             arg == "-?" or
             arg == "?"):
         printHilfe(sys.argv[0])
+
     elif (arg == "--erstelle-stammdaten" or
             arg == "-es"):
-        erstelleStammdaten()
+        return_value = erstelleStammdaten()
+        if return_value != 0:
+            sys.exit(return_value)
+
     elif (arg == "--erstelle-rekorde-beispiel" or
             arg == "-er"):
-        erstelleRekordeBeispiel()
+        return_value = erstelleRekordeBeispiel()
+        if return_value != 0:
+            sys.exit(return_value)
+
     elif (arg == "--erstelle-wettkampfliste-beispiel" or
             arg == "-ew"):
-        erstelleWettkampflisteBeispiel()
+        return_value = erstelleWettkampflisteBeispiel()
+        if return_value != 0:
+            sys.exit(return_value)
+
     elif (arg == "--erstelle-urkunden" or
             arg == "-eu"):
-        berechneUrkunden()
-        erstellePDFs()
+        return_value = berechneUrkunden()
+        if return_value != 0:
+            sys.exit(return_value)
+        return_value = erstellePDFs()
+        if return_value != 0:
+            sys.exit(return_value)
+
     elif (len(sys.argv) == 1):
-        printHilfe(sys.argv[0])
+        return_value = printHilfe(sys.argv[0])
+        if return_value != 0:
+            sys.exit(return_value)
 
 
 sys.exit(0)
