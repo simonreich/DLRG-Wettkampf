@@ -29,6 +29,12 @@ This program is free software: you can redistribute it and/or modify
 # Dateiname der zu lesenden Stammdaten
 fileInputStammdaten="stammdaten.csv"
 
+# Dateiname der zu lesenden Meldeliste
+fileInputMeldeliste="in/meldeliste.csv"
+
+# Dateiname der zu zu speichernden Laufliste
+fileOutputLaufliste="out/laufliste.csv"
+
 # Dateiname der zu lesenden Rekorde
 fileInputRekorde="in/rekorde.csv"
 
@@ -36,16 +42,25 @@ fileInputRekorde="in/rekorde.csv"
 fileInputWettkampfliste="in/wettkampfliste.csv"
 
 # Dateiname des zu lesenden Urkunden-Templates
-fileInputUrkunde="template/urkunden/urkunde.tex"
+fileTemplateUrkunde="template/urkunden/urkunde.tex"
 
 # Dateiname des zu lesenden Ergebnislisten-Templates
-fileInputErgebnisliste="template/ergebnislisten/ergebnisliste.tex"
+fileTemplateErgebnisliste="template/ergebnislisten/ergebnisliste.tex"
+
+# Dateiname des zu lesenden Lauflisten-Templates
+fileTemplateLaufliste="template/lauflisten/laufliste.tex"
+
+# Dateiname des zu lesenden Lauflisten-Templates
+fileTemplateLaufkarte="template/laufkarten/laufkarte.tex"
 
 # Dateinamen der zu speichernden Ergebnislisten, alphabetisch sortiert
 fileOutputAlpha="out/namelist_alpha.csv"
 
 # Dateinamen der zu speichernden Ergebnislisten, nach Gesamtplatz sortiert
 fileOutputGesamtplatz="out/namelist_gesamt.csv"
+
+# Dateinamen der zu speichernden Ergebnislisten, nach Gesamtplatz sortiert
+fileOutputLaufkarte="out/laufkarte.csv"
 
 # Dateinamen der zu speichernden Ergebnislisten, nach Altersklassenplatz
 # sortiert
@@ -75,12 +90,14 @@ import os.path
 import subprocess
 
 
-# Stammdaten
+# globale Variablen
 global dataInputStammdatenHeader
-global dataInputAnzahlStammdaten
 dataInputStammdatenHeader = ["Nummer", "Vorname", "Nachname", "Geburtsdatum", \
+global dataInputAnzahlStammdaten
     "Mail", "Teamname"]
 dataInputAnzahlStammdaten = len(dataInputStammdatenHeader)
+global BahnenAnzahl
+BahnenAnzahl = 5
 
 
 def sanityCheckInputfiles(typeOfTest):
@@ -92,126 +109,155 @@ def sanityCheckInputfiles(typeOfTest):
                     2 fuer Test von 1 und
                       fileInputStammdaten
                     3 fuer Test von 1, 2 und
-                      fileInputUrkunde und fileInputErgebnisliste
+                      fileTemplateUrkunde und fileTemplateErgebnisliste
     """
-    if os.path.exists(fileInputRekorde) == False:
-        print("Die Datei " + fileInputRekorde + " existiert nicht.")
-        return 1
-    if os.path.exists(fileInputWettkampfliste) == False:
-        print("Die Datei " + fileInputWettkampfliste + " existiert nicht.")
-        return 1
+    if typeOfTest == 1 || typeOfTest == 2:
+        if os.path.exists(fileInputRekorde) == False:
+            print("Die Datei " + fileInputRekorde + " existiert nicht.")
+            return 1
+        if os.path.exists(fileInputWettkampfliste) == False:
+            print("Die Datei " + fileInputWettkampfliste + " existiert nicht.")
+            return 1
 
-    # Rekorde
-    fileInputHandle = open(fileInputRekorde, 'rt')
-    fileInputReader = csv.reader (fileInputHandle)
+        # Rekorde
+        fileInputHandle = open(fileInputRekorde, 'rt')
+        fileInputReader = csv.reader (fileInputHandle)
+
+        dataInputRekorde = [[0 for x in range(0)] for x in range(0)]
+        dataInputRekordeHeader = []
+
+        rownum=0
+        for row in fileInputReader:
+            if rownum == 0:
+                dataInputRekordeHeader = row
+            else:
+                dataInputRekorde.append(row)
+            rownum += 1
+
+        dataInputRekordeAnzahlWK = len(dataInputRekordeHeader)-1
+
+        if dataInputRekordeAnzahlWK <= 0:
+            print("Die Datei " + fileInputRekorde + " enthält zu wenig Wettkämpfe.")
+            return 1
+        if len(dataInputRekorde) <= 0:
+            print("Die Datei " + fileInputRekorde + " enthält zu wenig "
+                "Altersklassen.")
+            return 1
+
+        # Wettkampfliste
+        fileInputHandle = open(fileInputWettkampfliste, 'rt')
+        fileInputReader = csv.reader (fileInputHandle)
     
-    dataInputRekorde = [[0 for x in range(0)] for x in range(0)]
-    dataInputRekordeHeader = []
+        dataInputWettkampfliste = [[0 for x in range(0)] for x in range(0)]
+        dataInputWettlampflisteHeader = []
     
-    rownum=0
-    for row in fileInputReader:
-        if rownum == 0:
-            dataInputRekordeHeader = row
-        else:
-            dataInputRekorde.append(row)
-        rownum += 1
+        rownum=0
+        for row in fileInputReader:
+            if rownum == 0:
+                dataInputWettkampflisteHeader = row
+            else:
+                dataInputWettkampfliste.append(row)
+            rownum += 1
 
-    dataInputRekordeAnzahlWK = len(dataInputRekordeHeader)-1
+        dataInputWettkampflisteAnzahlWK = rownum-1
 
-    if dataInputRekordeAnzahlWK <= 0:
-        print("Die Datei " + fileInputRekorde + " enthält zu wenig Wettkämpfe.")
-        return 1
-    if len(dataInputRekorde) <= 0:
-        print("Die Datei " + fileInputRekorde + " enthält zu wenig "
-            "Altersklassen.")
-        return 1
+        if dataInputWettkampflisteAnzahlWK <= 0:
+            print("Die Datei " + fileInputWettkampfliste + " enthält zu wenig "
+                "Wettkämpfe.")
+            return 1
 
-    # Wettkampfliste
-    fileInputHandle = open(fileInputWettkampfliste, 'rt')
-    fileInputReader = csv.reader (fileInputHandle)
-    
-    dataInputWettkampfliste = [[0 for x in range(0)] for x in range(0)]
-    dataInputWettlampflisteHeader = []
-    
-    rownum=0
-    for row in fileInputReader:
-        if rownum == 0:
-            dataInputWettkampflisteHeader = row
-        else:
-            dataInputWettkampfliste.append(row)
-        rownum += 1
+        if dataInputRekordeAnzahlWK != dataInputWettkampflisteAnzahlWK:
+            print("In den Dateien \n" + fileInputWettkampfliste + "\n" + \
+                fileInputRekorde + "\nist eine unterschiedliche Anzahl an "
+                "Wettkämpfen eingetragen.")
+            return 1
 
-    dataInputWettkampflisteAnzahlWK = rownum-1
-
-    if dataInputWettkampflisteAnzahlWK <= 0:
-        print("Die Datei " + fileInputWettkampfliste + " enthält zu wenig "
-            "Wettkämpfe.")
-        return 1
-
-    if dataInputRekordeAnzahlWK != dataInputWettkampflisteAnzahlWK:
-        print("In den Dateien \n" + fileInputWettkampfliste + "\n" + \
-            fileInputRekorde + "\nist eine unterschiedliche Anzahl an "
-            "Wettkämpfen eingetragen.")
-        return 1
-
-
-    # Ende von Test 1
-    if typeOfTest == 1:
-        return 0
-
-
-    if os.path.exists(fileInputStammdaten) == False:
-        print("Die Datei " + fileInputStammdaten+ " existiert nicht.")
-        return 1
-
-    # Stammdaten
-    fileInputHandle = open(fileInputStammdaten, 'rt')
-    fileInputReader = csv.reader (fileInputHandle)
-    
-    dataInputStammdaten = [[0 for x in range(0)] for x in range(0)]
-    dataInputStammdatenHeader = []
-    
-    rownum=0
-    for row in fileInputReader:
-        if rownum == 0:
-            dataInputStammdatenHeader = row
-        else:
-            dataInputStammdaten.append(row)
-
-    dataInputStammdatenAnzahlWK = \
-        len(dataInputStammdatenHeader)-dataInputAnzahlStammdaten
-
-    if dataInputStammdatenAnzahlWK <= 0:
-        print("Die Datei " + fileInputStammdaten + " enthält zu wenig"
-        "Wettkämpfe.")
-        return 1
-    if dataInputRekordeAnzahlWK != dataInputStammdatenAnzahlWK:
-        print("In den Dateien \n" + \
-            fileInputWettkampfliste + "\n" + \
-            fileInputRekorde + "\n" + \
-            fileInputStammdaten + "\n" + \
-            "ist eine unterschiedliche Anzahl an Wettkämpfen eingetragen.")
-        return 1
-
-    if os.path.isdir(fileOutputFolder) == False:
-        print("Der Ordner " + fileOutputFolder + " existiert nicht.")
-        return 1
-
-
-    # Ende von Test 2
     if typeOfTest == 2:
-        return 0
+        if os.path.exists(fileInputStammdaten) == False:
+            print("Die Datei " + fileInputStammdaten+ " existiert nicht.")
+            return 1
+
+        # Stammdaten
+        fileInputHandle = open(fileInputStammdaten, 'rt')
+        fileInputReader = csv.reader (fileInputHandle)
+    
+        dataInputStammdaten = [[0 for x in range(0)] for x in range(0)]
+        dataInputStammdatenHeader = []
+    
+        rownum=0
+        for row in fileInputReader:
+            if rownum == 0:
+                dataInputStammdatenHeader = row
+            else:
+                dataInputStammdaten.append(row)
+            rownum += 1
+
+        dataInputStammdatenAnzahlWK = \
+            len(dataInputStammdatenHeader)-dataInputAnzahlStammdaten
+
+        if dataInputStammdatenAnzahlWK <= 0:
+            print("Die Datei " + fileInputStammdaten + " enthält zu wenig"
+                "Wettkämpfe.")
+            return 1
+        if dataInputRekordeAnzahlWK != dataInputStammdatenAnzahlWK:
+            print("In den Dateien \n" + \
+                fileInputWettkampfliste + "\n" + \
+                fileInputRekorde + "\n" + \
+                fileInputStammdaten + "\n" + \
+                "ist eine unterschiedliche Anzahl an Wettkämpfen eingetragen.")
+            return 1
+
+        if os.path.isdir(fileOutputFolder) == False:
+            print("Der Ordner " + fileOutputFolder + " existiert nicht.")
+            return 1
+
+    if typeOfTest == 3:
+        if os.path.exists(fileTemplateUrkunde) == False:
+            print("Die Datei " + fileTemplateUrkunde + " existiert nicht.")
+           return 1
+        if os.path.exists(fileTemplateErgebnisliste) == False:
+            rint("Die Datei " + fileTemplateErgebnisliste + " existiert nicht.")
+           return 1
+
+    if typeOfTest == 4
+        if os.path.exists(fileTemplateLaufliste) == False:
+            print("Die Datei " + fileTemplateMeldeliste + " existiert nicht.")
+           return 1
+        if os.path.exists(fileInputMeldeliste) == False:
+            print("Die Datei " + fileInputMeldeliste + " existiert nicht.")
+           return 1
+
+        # Meldeliste
+        fileInputHandle = open(fileInputMeldeliste, 'rt')
+        fileInputReader = csv.reader (fileInputHandle)
+    
+        dataInput = [[0 for x in range(0)] for x in range(0)]
+        dataInputHeader = []
+    
+        rownum=0
+        for row in fileInputReader:
+            if rownum == 0:
+                dataInputHeader = row
+            else:
+                dataInput.append(row)
+            rownum += 1
+
+        if len(dataInputStammdatenHeader)-dataInputAnzahlStammdaten <= 0
+            print("Die Datei " + fileInputMeldeliste + " enthält zu wenig"
+                "Wettkämpfe.")
+            return 1
+
+        if rownum < 1
+            print("Die Datei " + fileInputMeldeliste + " enthält zu wenig"
+                "Teilnehmer.")
+            return 1
+
+    if typeOfTest == 5
+        if os.path.exists(fileTemplateLaufliste) == False:
+            print("Die Datei " + fileInputMeldeliste + " existiert nicht.")
+           return 1
 
 
-    if os.path.exists(fileInputUrkunde) == False:
-        print("Die Datei " + fileInputUrkunde + " existiert nicht.")
-        return 1
-    if os.path.exists(fileInputErgebnisliste) == False:
-        print("Die Datei " + fileInputErgebnisliste + " existiert nicht.")
-        return 1
-
-
-    # Ende von Test 3
     return 0
 
 
@@ -442,9 +488,9 @@ def erstelleRekordeBeispiel():
     return 0
 
 
-# Erstelle Stammdaten template
-def erstelleStammdaten():
-    """ Erstellt eine Datei, die eine leere Stammdatenbank beinhaltet.
+# Erstelle Meldelisten template
+def erstelleMeldeliste():
+    """ Erstellt eine Datei, die eine leere Meldeliste beinhaltet.
     """
 
     # Sanity Check der Input Daten
@@ -455,8 +501,8 @@ def erstelleStammdaten():
         print("Die Datei " + fileInputWettkampfliste + " existiert nicht.")
         return 1
 
-    if os.path.exists(fileInputStammdaten) == True:
-        print("Die Datei " + fileInputStammdaten + " existiert bereits.")
+    if os.path.exists(fileInputMeldeliste) == True:
+        print("Die Datei " + fileInputMeldeliste + " existiert bereits.")
         return 1
 
     dataOutput = dataInputStammdatenHeader
@@ -478,7 +524,7 @@ def erstelleStammdaten():
         dataOutput.append("WK" + str(rownum+1))
 
     # Daten speichern
-    fileOutputHandle = open (fileInputStammdaten, "wt")
+    fileOutputHandle = open (fileInputMeldeliste, "wt")
     fileOutputWriter = csv.writer (fileOutputHandle, 
         delimiter=',', 
         quotechar='"', 
@@ -488,8 +534,443 @@ def erstelleStammdaten():
 
     fileOutputHandle.close()
 
-    print ("Die Datei" + fileInputStammdaten + \
+    print ("Die Datei" + fileInputMeldeliste + \
         " wurde ergolgreich geschrieben.")
+
+    return 0
+
+
+# Erstelle Stammdaten template
+def erstelleStammdaten():
+    """ Erstellt eine Datei, die eine leere Stammdatenbank beinhaltet.
+    """
+
+    # Sanity Check der Input Daten
+    if sanityCheckInputfiles(1) != 0:
+        return 1
+
+    if os.path.exists(fileInputWettkampfliste) == False:
+        print("Die Datei " + fileInputWettkampfliste + " existiert nicht.")
+        return 1
+
+    if os.path.exists(fileInputMeldeliste) == False:
+        print("Die Datei " + fileInputMeldeliste + " existiert nicht.")
+        return 1
+
+    if os.path.exists(fileInputStammdaten) == True:
+        print("Die Datei " + fileInputStammdaten + " existiert bereits.")
+        return 1
+
+    dataOutputHeader = dataInputStammdatenHeader
+    dataOutput = [[0 for x in range(0)] for x in range(0)]
+
+    # Oeffne Wettkampfliste und erstelle Liste
+    fileInputHandle = open(fileInputWettkampfliste, 'rt')
+    fileInputReader = csv.reader (fileInputHandle)
+
+    # Lade csv in Array
+    rownum=0
+    for row in fileInputReader:
+        rownum += 1
+    rownumTotal = rownum-1
+
+    # Datei schliessen
+    fileInputHandle.close ()
+
+    for rownum in range(rownumTotal):
+        dataOutputHeader.append("WK" + str(rownum+1))
+
+    # Oeffne Meldeliste und kopiere Stammdaten
+    fileInputHandle = open(fileInputMeldeliste, 'rt')
+    fileInputReader = csv.reader (fileInputHandle)
+
+    # Lade csv in Array
+    rownum=0
+    for row in fileInputReader:
+        if rownum > 0:
+            dataOutput.append(row)
+        rownum += 1
+
+    # Datei schliessen
+    fileInputHandle.close ()
+
+    # Daten speichern
+    fileOutputHandle = open (fileInputStammdaten, "wt")
+    fileOutputWriter = csv.writer (fileOutputHandle, 
+        delimiter=',', 
+        quotechar='"', 
+        quoting=csv.QUOTE_ALL)
+
+    fileOutputWriter.writerow(dataOutputHeader)
+    for row in dataOutput:
+        rownum=0
+        for cell in row:
+            if (rownum >= dataInputAnzahlStammdaten and
+                str(cell) != ""):
+                row[rownum] = ""
+            rownum += 1
+        fileOutputWriter.writerow(row)
+
+    # Datei schliessen
+    fileOutputHandle.close()
+
+    print ("Die Datei " + fileInputStammdaten + \
+        " wurde ergolgreich geschrieben.")
+
+    return 0
+
+
+# Berechnet die Lauflisten
+def erstelleLauflisten():
+    """ Berechnet Lauflisten aus der Meldeliste
+    """
+
+    # Sanity Check der Input Daten
+    if sanityCheckInputfiles(4) != 0:
+        return 1
+
+    ######################################################
+    # Erstelle Header
+    dataOutputHeader = ["Lauf", "WK"]
+    dataOutput = [[0 for x in range(0)] for x in range(0)]
+
+    for rownum in range(BahnenAnzahl):
+        dataOutputHeader.append("Bahn" + str(rownum+1))
+
+
+    ######################################################
+    # Oeffne Meldeliste und erstelle Liste
+    dataInputHeader = []
+    dataInput = [[0 for x in range(0)] for x in range(0)]
+    fileInputHandle = open(fileInputMeldeliste, 'rt')
+    fileInputReader = csv.reader (fileInputHandle)
+
+    # Lade csv in Array
+    rownum=0
+    for row in fileInputReader:
+        if rownum == 0:
+            dataInputHeader = row
+        else:
+            dataInput.append(row)
+        rownum += 1
+
+    # Datei schliessen
+    fileInputHandle.close ()
+
+    # Im Array alle Zeichen != "" mit Namen ersetzen
+    rownum=0
+    for row in dataInput:
+        rowName = row[2] + ", " + row[1]
+        cellnum=0
+        for cell in row:
+            if (cellnum >= dataInputAnzahlStammdaten and
+                str(cell) != ""):
+                dataInput[rownum][cellnum] = rowName
+            cellnum += 1
+        rownum += 1
+            
+
+    ######################################################
+    # Verteile Schwimmer
+
+    # wknum 0, ..., WKmax-1
+    for wknum in range(len(dataInputHeader)-dataInputAnzahlStammdaten):
+        dataInputSpalte = dataInputAnzahlStammdaten+wknum
+        laufNamen = []
+        rownum=0
+        for row in dataInput:
+            if dataInput[rownum][dataInputSpalte] != "":
+                laufNamen.append(dataInput[rownum][dataInputSpalte])
+            rownum += 1
+
+        laufNamen.insert(0, wknum+1)
+        dataOutput.append(laufNamen)
+
+    # Zeilen mit mehr als BahnenAnzahl Eintraege in die naechste Zeile 
+    # verschieben
+    rownum=0
+    for row in dataOutput:
+        if len(row) > BahnenAnzahl:
+            rowNeu = []
+
+            cellnum=0
+            for cell in row:
+                if cellnum > BahnenAnzahl:
+                    rowNeu.append(cell)
+                cellnum += 1
+
+            rowNeu.insert(0, dataOutput[rownum][0])
+            dataOutput.insert(rownum+1, rowNeu)
+
+        rownum += 1
+
+    # Alle Eintraege > BahnenAnzahl loeschen
+    rownum=0
+    for row in dataOutput:
+        if len(row) > BahnenAnzahl:
+            rowNeu = []
+
+            cellnum=0
+            for cell in row:
+                if cellnum <= BahnenAnzahl:
+                    rowNeu.append(cell)
+                cellnum += 1
+
+            del dataOutput[rownum]
+            dataOutput.insert(rownum, rowNeu)
+
+        rownum += 1
+
+    # Starter, die alleine sind verteilen
+    rownum=0
+    for row in dataOutput:
+        if (len(row) == 2 and
+                row[0] == dataOutput[rownum-1][0]):
+            dataOutput[rownum].insert(1, dataOutput[rownum-1][BahnenAnzahl])
+            del dataOutput[rownum-1][BahnenAnzahl]
+        rownum += 1
+
+    # Leerbahnen einfuegen auf Bahn 1
+    rownum=0
+    for row in dataOutput:
+        if len(row)-1 < BahnenAnzahl:
+            dataOutput[rownum].insert(1, "")
+        rownum += 1
+
+    # Leerbahnen einfuegen abschliessend
+    rownum=0
+    for row in dataOutput:
+        if len(row)-1 < BahnenAnzahl:
+            for cell in range(BahnenAnzahl-len(row)+1):
+                dataOutput[rownum].append("")
+        rownum += 1
+
+    # Laufnummer einfuegen
+    rownum=0
+    for row in dataOutput:
+        dataOutput[rownum].insert(0, rownum+1)
+        rownum += 1
+
+
+    ######################################################
+    # Daten speichern
+    fileOutputHandle = open (fileOutputLaufliste, "wt")
+    fileOutputWriter = csv.writer (fileOutputHandle, 
+        delimiter=',', 
+        quotechar='"', 
+        quoting=csv.QUOTE_ALL)
+
+    fileOutputWriter.writerow(dataOutputHeader)
+    for row in dataOutput:
+        fileOutputWriter.writerow(row)
+
+    # Datei schliessen
+    fileOutputHandle.close()
+
+    print ("Die Datei " + fileOutputLaufliste + \
+        " wurde erfolgreich geschrieben.")
+
+    return 0
+
+
+# Berechnet die Lauflisten
+def erstellePDFLauflisten():
+    """ Berechnet Lauflisten aus der Meldeliste
+    """
+
+    ######################################################
+    # Oeffne Ergebnisliste Template
+    if os.path.exists(fileTemplateLaufliste) == False:
+        print("Die Datei " + fileTemplateLaufliste + " existiert nicht.")
+        return 1
+
+    # Urkunden Template
+    fileInputHandle = open(fileTemplateLaufliste, 'rt')
+    dataInputTemplate = fileInputHandle.readlines()
+    fileInputHandle.close()
+
+    rownum = 0
+    for row in dataInputTemplate:
+        if row.find("<template:laufliste>") != -1:
+            del dataInputTemplate[rownum]
+
+            # Pruefen, ob die Tabelle auf eine Seite passt.
+            # Es passen Stammdaten und 6 WK auf die erste Seite
+            if BahnenAnzahl <= 6:
+                # Header Tabelle
+                row1 = r"\begin{longtable}{"
+                row1 += r"p{0.5cm} c |"
+                for rownum1 in range(BahnenAnzahl):
+                    row1 += r" | l"
+                row1 += "}\n"
+                # Ueberschrift
+                row1 += "Lauf & WK"
+                for rownum1 in range(BahnenAnzahl):
+                    row1 = row1 + r" & Bahn " + str(rownum1+1)
+                row1 += "\\\\ \hline\n"
+                # Tabelle
+                row1 += r"\DTLloaddb{names}{" + fileOutputLaufliste + "}\n"
+                row1 += r"\DTLforeach{names}{"
+                row1 += r"\dlauf=Lauf, \dwk=WK"
+                for rownum1 in range (BahnenAnzahl):
+                    row1 += r", \dbahn" + zahl2String(rownum1+1) + r"=Bahn" + \
+                        str(rownum1+1)
+                row1 += "}{\n"
+                row1 += r"\dlauf & \dwk"
+                for rownum1 in range (BahnenAnzahl):
+                    row1 += r"& \PrintName{\dbahn" + zahl2String(rownum1+1) + \
+                        r"}"
+                row1 += "\\\\\n}\n"
+                # Footer Tabelle
+                row1 += "\end{longtable}\n"
+
+                dataInputTemplate.insert(rownum, row1)
+        rownum += 1
+
+
+
+    ######################################################
+    # Schreibe Lauflisten Template
+    fileTemplateLauflisteN = fileTemplateLaufliste + ".temp"
+    fileOutputHandle = open (fileTemplateLauflisteN, "wt")
+    for row in dataInputTemplate:
+        fileOutputHandle.write("".join(str(row)))
+
+    fileOutputHandle.close()
+
+
+    ######################################################
+    # pdflatex aufrufen
+    return_value = subprocess.call(['pdflatex', fileTemplateLauflisteN], 
+        shell=False)
+    if return_value != 0:
+        print("pdflatex konnte nicht aufgerufen werden. Der folgende Befehl "
+            "konnte nicht ausgeführt werden:\npdflatex " + \
+            fileTemplateLauflisteN)
+        return 1
+
+    return 0
+
+
+# Berechnet die Lauflisten
+def erstelleLaufkarte():
+    """ Berechnet Laufkarte aus Meldeliste
+    """
+
+    # Sanity Check der Input Daten
+    if sanityCheckInputfiles(5) != 0:
+        return 1
+
+    ######################################################
+    # Oeffne Datei und lade csv
+    if os.path.exists(fileOutputLaufliste) == False:
+        print("Die Datei " + fileOutputLaufliste + " existiert nicht.")
+        return 1
+
+    # Laufliste
+    fileInputHandle = open(fileOutputLaufliste, 'rt')
+    fileInputReader = csv.reader (fileInputHandle)
+    
+    # Lade csv in Array
+    dataInput = [[0 for x in range(0)] for x in range(0)]
+    dataInputHeader = []
+    
+    rownum=0
+    for row in fileInputReader:
+        if rownum == 0:
+            dataInputHeader = row
+        else:
+            dataInput.append (row)
+        rownum += 1
+    
+    # Datei schliessen
+    fileInputHandle.close ()
+    
+
+    ######################################################
+    # Zeilen mit mehr als 1 Eintrag in die naechste Zeile 
+    # verschieben
+    dataOutput = [[0 for x in range(0)] for x in range(0)]
+    dataOutputHeader = ["Lauf", "WK", "Bahn", "Name"]
+    rownum=0
+    for row in dataInput:
+        cellnum=0
+        for cell in row:
+            rowNeu = []
+            if cellnum >= 2:
+                rowNeu.append(dataInput[rownum][0])          # Lauf
+                rowNeu.append(dataInput[rownum][1])          # WK
+                rowNeu.append(len(row)-cellnum)              # Bahn
+                rowNeu.append(dataInput[rownum][cellnum])    # Name
+                dataOutput.append(rowNeu)
+
+            cellnum += 1
+        rownum += 1
+
+
+    ######################################################
+    # Daten speichern
+    fileOutputHandle = open (fileOutputLaufkarte, "wt")
+    fileOutputWriter = csv.writer (fileOutputHandle, 
+        delimiter=',', 
+        quotechar='"', 
+        quoting=csv.QUOTE_ALL)
+
+    fileOutputWriter.writerow(dataOutputHeader)
+    for row in dataOutput:
+        fileOutputWriter.writerow(row)
+
+    # Datei schliessen
+    fileOutputHandle.close()
+
+    return 0
+
+
+# Berechnet die Laufkarten
+def erstellePDFLaufkarten():
+    """ Erstellt PDFs aus der Laufliste
+    """
+
+    ######################################################
+    # Oeffne Ergebnisliste Template
+    if os.path.exists(fileTemplateLaufkarte) == False:
+        print("Die Datei " + fileTemplateLaufkarte + " existiert nicht.")
+        return 1
+
+    # Urkunden Template
+    fileInputHandle = open(fileTemplateLaufkarte, 'rt')
+    dataInputTemplate = fileInputHandle.readlines()
+    fileInputHandle.close()
+
+    rownum = 0
+    for row in dataInputTemplate:
+        if row.find("<template:laufkarte>") != -1:
+            del dataInputTemplate[rownum]
+
+            row1 = r"\DTLloaddb{names}{" + fileOutputLaufkarte + "}\n"
+            dataInputTemplate.insert(rownum, row1)
+        rownum += 1
+
+
+    ######################################################
+    # Schreibe Lauflisten Template
+    fileTemplateLaufkarteN = fileTemplateLaufkarte + ".temp"
+    fileOutputHandle = open (fileTemplateLaufkarteN, "wt")
+    for row in dataInputTemplate:
+        fileOutputHandle.write("".join(str(row)))
+
+    fileOutputHandle.close()
+
+
+    ######################################################
+    # pdflatex aufrufen
+    return_value = subprocess.call(['pdflatex', fileTemplateLaufkarteN], 
+        shell=False)
+    if return_value != 0:
+        print("pdflatex konnte nicht aufgerufen werden. Der folgende Befehl "
+            "konnte nicht ausgeführt werden:\npdflatex " + \
+            fileTemplateLaufkarteN)
+        return 1
 
     return 0
 
@@ -773,10 +1254,10 @@ def berechneUrkunden():
     fileOutputHandle.close()
 
     return 0
-    
+
 
 # Erstelle Stammdaten template
-def erstellePDFs():
+def erstellePDFUrkunden():
     """ Erstellt PDFs mittels pfdlatex.
         Die templates liegen im Ordner template/
     """
@@ -872,12 +1353,12 @@ def erstellePDFs():
 
     ######################################################
     # Oeffne Urkunde Template
-    if os.path.exists(fileInputUrkunde) == False:
-        print("Die Datei " + fileInputUrkunde + " existiert nicht.")
+    if os.path.exists(fileTemplateUrkunde) == False:
+        print("Die Datei " + fileTemplateUrkunde + " existiert nicht.")
         return 1
 
     # Urkunden Template
-    fileInputHandle = open(fileInputUrkunde, 'rt')
+    fileInputHandle = open(fileTemplateUrkunde, 'rt')
     dataInputTemplate = fileInputHandle.readlines()
     fileInputHandle.close()
 
@@ -912,7 +1393,7 @@ def erstellePDFs():
 
     ######################################################
     # Schreibe Urkunden Template
-    fileOutputUrkunde = fileInputUrkunde + ".temp"
+    fileOutputUrkunde = fileTemplateUrkunde + ".temp"
     fileOutputHandle = open (fileOutputUrkunde, "wt")
     for row in dataInputTemplate:
         fileOutputHandle.write("".join(str(row)))
@@ -938,12 +1419,12 @@ def erstellePDFs():
 
     ######################################################
     # Oeffne Ergebnisliste Template
-    if os.path.exists(fileInputErgebnisliste) == False:
-        print("Die Datei " + fileInputErgebnisliste + " existiert nicht.")
+    if os.path.exists(fileTemplateErgebnisliste) == False:
+        print("Die Datei " + fileTemplateErgebnisliste + " existiert nicht.")
         return 1
 
     # Urkunden Template
-    fileInputHandle = open(fileInputErgebnisliste, 'rt')
+    fileInputHandle = open(fileTemplateErgebnisliste, 'rt')
     dataInputTemplate = fileInputHandle.readlines()
     fileInputHandle.close()
 
@@ -1125,7 +1606,7 @@ def erstellePDFs():
             
     ######################################################
     # Schreibe Urkunden Template
-    fileOutputErgebnisliste = fileInputErgebnisliste + ".temp"
+    fileOutputErgebnisliste = fileTemplateErgebnisliste + ".temp"
     fileOutputHandle = open (fileOutputErgebnisliste, "wt")
     for row in dataInputTemplate:
         fileOutputHandle.write("".join(str(row)))
@@ -1169,12 +1650,6 @@ def main(argv=None):
                 arg == "?"):
             printHilfe(sys.argv[0])
 
-        elif (arg == "--erstelle-stammdaten" or
-                arg == "-es"):
-            return_value = erstelleStammdaten()
-            if return_value != 0:
-                sys.exit(return_value)
-
         elif (arg == "--erstelle-rekorde-beispiel" or
                 arg == "-er"):
             return_value = erstelleRekordeBeispiel()
@@ -1187,12 +1662,42 @@ def main(argv=None):
             if return_value != 0:
                 sys.exit(return_value)
 
+        elif (arg == "--erstelle-meldeliste" or
+                arg == "-em"):
+            return_value = erstelleMeldeliste()
+            if return_value != 0:
+                sys.exit(return_value)
+
+        elif (arg == "--erstelle-laufliste" or
+                arg == "-el"):
+            return_value = erstelleLauflisten()
+            if return_value != 0:
+                sys.exit(return_value)
+            return_value =  erstellePDFLauflisten()
+            if return_value != 0:
+                sys.exit(return_value)
+
+        elif (arg == "--erstelle-laufkarte" or
+                arg == "-ek"):
+            return_value = erstelleLaufkarte()
+            if return_value != 0:
+                sys.exit(return_value)
+            return_value =  erstellePDFLaufkarten()
+            if return_value != 0:
+                sys.exit(return_value)
+
+        elif (arg == "--erstelle-stammdaten" or
+                arg == "-es"):
+            return_value = erstelleStammdaten()
+            if return_value != 0:
+                sys.exit(return_value)
+
         elif (arg == "--erstelle-urkunden" or
                 arg == "-eu"):
             return_value = berechneUrkunden()
             if return_value != 0:
                 sys.exit(return_value)
-            return_value = erstellePDFs()
+            return_value = erstellePDFUrkunden()
             if return_value != 0:
                 sys.exit(return_value)
 
