@@ -26,6 +26,8 @@ This program is free software: you can redistribute it and/or modify
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 """
 
+######################################################
+
 # Dateiname der zu lesenden Stammdaten
 fileInputStammdaten="stammdaten.csv"
 
@@ -40,18 +42,6 @@ fileInputRekorde="in/rekorde.csv"
 
 # Dateiname der zu lesenden Rekorde
 fileInputWettkampfliste="in/wettkampfliste.csv"
-
-# Dateiname des zu lesenden Urkunden-Templates
-fileTemplateUrkunde="template/urkunden/urkunde.tex"
-
-# Dateiname des zu lesenden Ergebnislisten-Templates
-fileTemplateErgebnisliste="template/ergebnislisten/ergebnisliste.tex"
-
-# Dateiname des zu lesenden Lauflisten-Templates
-fileTemplateLaufliste="template/lauflisten/laufliste.tex"
-
-# Dateiname des zu lesenden Lauflisten-Templates
-fileTemplateLaufkarte="template/laufkarten/laufkarte.tex"
 
 # Dateinamen der zu speichernden Ergebnislisten, alphabetisch sortiert
 fileOutputAlpha="out/namelist_alpha.csv"
@@ -77,6 +67,25 @@ fileOutputRekordeBeispiel="in/rekorde-beispiel.csv"
 
 
 ######################################################
+# Latex Templates
+
+# Dateiname des zu lesenden Urkunden-Templates
+fileTemplateUrkunde="template/urkunden/urkunde.tex"
+fileTemplateOutUrkunde="out/urkunde.tex"
+
+# Dateiname des zu lesenden Ergebnislisten-Templates
+fileTemplateErgebnisliste="template/ergebnislisten/ergebnisliste.tex"
+fileTemplateOutErgebnisliste="out/ergebnisliste.tex"
+
+# Dateiname des zu lesenden Lauflisten-Templates
+fileTemplateLaufliste="template/lauflisten/laufliste.tex"
+fileTemplateOutLaufliste="out/laufliste.tex"
+
+# Dateiname des zu lesenden Lauflisten-Templates
+fileTemplateLaufkarte="template/laufkarten/laufkarte.tex"
+fileTemplateOutLaufkarte="out/laufkarte.tex"
+
+######################################################
 ## No Configuration after this
 ######################################################
 
@@ -93,8 +102,8 @@ import subprocess
 # globale Variablen
 global dataInputStammdatenHeader
 dataInputStammdatenHeader = ["Nummer", "Vorname", "Nachname", "Geburtsdatum", \
-global dataInputAnzahlStammdaten
     "Mail", "Teamname"]
+global dataInputAnzahlStammdaten
 dataInputAnzahlStammdaten = len(dataInputStammdatenHeader)
 global BahnenAnzahl
 BahnenAnzahl = 5
@@ -111,7 +120,7 @@ def sanityCheckInputfiles(typeOfTest):
                     3 fuer Test von 1, 2 und
                       fileTemplateUrkunde und fileTemplateErgebnisliste
     """
-    if typeOfTest == 1 || typeOfTest == 2:
+    if (typeOfTest == 1 or typeOfTest == 2):
         if os.path.exists(fileInputRekorde) == False:
             print("Die Datei " + fileInputRekorde + " existiert nicht.")
             return 1
@@ -212,20 +221,12 @@ def sanityCheckInputfiles(typeOfTest):
             return 1
 
     if typeOfTest == 3:
-        if os.path.exists(fileTemplateUrkunde) == False:
-            print("Die Datei " + fileTemplateUrkunde + " existiert nicht.")
-           return 1
-        if os.path.exists(fileTemplateErgebnisliste) == False:
-            rint("Die Datei " + fileTemplateErgebnisliste + " existiert nicht.")
-           return 1
-
-    if typeOfTest == 4
         if os.path.exists(fileTemplateLaufliste) == False:
             print("Die Datei " + fileTemplateMeldeliste + " existiert nicht.")
-           return 1
+            return 1
         if os.path.exists(fileInputMeldeliste) == False:
             print("Die Datei " + fileInputMeldeliste + " existiert nicht.")
-           return 1
+            return 1
 
         # Meldeliste
         fileInputHandle = open(fileInputMeldeliste, 'rt')
@@ -242,20 +243,25 @@ def sanityCheckInputfiles(typeOfTest):
                 dataInput.append(row)
             rownum += 1
 
-        if len(dataInputStammdatenHeader)-dataInputAnzahlStammdaten <= 0
+        if len(dataInputHeader)-dataInputAnzahlStammdaten <= 0:
             print("Die Datei " + fileInputMeldeliste + " enthält zu wenig"
                 "Wettkämpfe.")
             return 1
 
-        if rownum < 1
+        if rownum < 1:
             print("Die Datei " + fileInputMeldeliste + " enthält zu wenig"
                 "Teilnehmer.")
             return 1
 
-    if typeOfTest == 5
+    if typeOfTest == 5:
         if os.path.exists(fileTemplateLaufliste) == False:
             print("Die Datei " + fileInputMeldeliste + " existiert nicht.")
-           return 1
+            return 1
+
+    if typeOfTest == 6:
+        if os.path.exists(fileOutputLaufliste) == False:
+            print("Die Datei " + fileOutputLaufliste + " existiert nicht.")
+            return 1
 
 
     return 0
@@ -626,7 +632,7 @@ def erstelleLauflisten():
     """
 
     # Sanity Check der Input Daten
-    if sanityCheckInputfiles(4) != 0:
+    if sanityCheckInputfiles(3) != 0:
         return 1
 
     ######################################################
@@ -778,6 +784,10 @@ def erstellePDFLauflisten():
     """ Berechnet Lauflisten aus der Meldeliste
     """
 
+    # Sanity Check der Input Daten
+    if sanityCheckInputfiles(3) != 0:
+        return 1
+
     ######################################################
     # Oeffne Ergebnisliste Template
     if os.path.exists(fileTemplateLaufliste) == False:
@@ -831,8 +841,7 @@ def erstellePDFLauflisten():
 
     ######################################################
     # Schreibe Lauflisten Template
-    fileTemplateLauflisteN = fileTemplateLaufliste + ".temp"
-    fileOutputHandle = open (fileTemplateLauflisteN, "wt")
+    fileOutputHandle = open (fileTemplateOutLaufliste, "wt")
     for row in dataInputTemplate:
         fileOutputHandle.write("".join(str(row)))
 
@@ -841,12 +850,19 @@ def erstellePDFLauflisten():
 
     ######################################################
     # pdflatex aufrufen
-    return_value = subprocess.call(['pdflatex', fileTemplateLauflisteN], 
+    return_value = subprocess.call(['pdflatex', fileTemplateOutLaufliste], 
         shell=False)
     if return_value != 0:
         print("pdflatex konnte nicht aufgerufen werden. Der folgende Befehl "
             "konnte nicht ausgeführt werden:\npdflatex " + \
-            fileTemplateLauflisteN)
+            fileTemplateOutLaufliste)
+        return 1
+    return_value = subprocess.call(['pdflatex', fileTemplateOutLaufliste], 
+        shell=False)
+    if return_value != 0:
+        print("pdflatex konnte nicht aufgerufen werden. Der folgende Befehl "
+            "konnte nicht ausgeführt werden:\npdflatex " + \
+            fileTemplateOutLaufliste)
         return 1
 
     return 0
@@ -858,7 +874,7 @@ def erstelleLaufkarte():
     """
 
     # Sanity Check der Input Daten
-    if sanityCheckInputfiles(5) != 0:
+    if sanityCheckInputfiles(3) != 0:
         return 1
 
     ######################################################
@@ -880,7 +896,7 @@ def erstelleLaufkarte():
         if rownum == 0:
             dataInputHeader = row
         else:
-            dataInput.append (row)
+            dataInput.append(row)
         rownum += 1
     
     # Datei schliessen
@@ -954,8 +970,7 @@ def erstellePDFLaufkarten():
 
     ######################################################
     # Schreibe Lauflisten Template
-    fileTemplateLaufkarteN = fileTemplateLaufkarte + ".temp"
-    fileOutputHandle = open (fileTemplateLaufkarteN, "wt")
+    fileOutputHandle = open (fileTemplateOutLaufkarte, "wt")
     for row in dataInputTemplate:
         fileOutputHandle.write("".join(str(row)))
 
@@ -964,12 +979,19 @@ def erstellePDFLaufkarten():
 
     ######################################################
     # pdflatex aufrufen
-    return_value = subprocess.call(['pdflatex', fileTemplateLaufkarteN], 
+    return_value = subprocess.call(['pdflatex', fileTemplateOutLaufkarte], 
         shell=False)
     if return_value != 0:
         print("pdflatex konnte nicht aufgerufen werden. Der folgende Befehl "
             "konnte nicht ausgeführt werden:\npdflatex " + \
-            fileTemplateLaufkarteN)
+            fileTemplateOutLaufkarte)
+        return 1
+    return_value = subprocess.call(['pdflatex', fileTemplateOutLaufkarte], 
+        shell=False)
+    if return_value != 0:
+        print("pdflatex konnte nicht aufgerufen werden. Der folgende Befehl "
+            "konnte nicht ausgeführt werden:\npdflatex " + \
+            fileTemplateOutLaufkarte)
         return 1
 
     return 0
@@ -1262,10 +1284,6 @@ def erstellePDFUrkunden():
         Die templates liegen im Ordner template/
     """
 
-    # Sanity Check der Input Daten
-    if sanityCheckInputfiles(3) != 0:
-        return 1
-
     ######################################################
     # Lade Wettkampfliste
     if os.path.exists(fileInputWettkampfliste) == False:
@@ -1393,8 +1411,7 @@ def erstellePDFUrkunden():
 
     ######################################################
     # Schreibe Urkunden Template
-    fileOutputUrkunde = fileTemplateUrkunde + ".temp"
-    fileOutputHandle = open (fileOutputUrkunde, "wt")
+    fileOutputHandle = open (fileTemplateOutUrkunde, "wt")
     for row in dataInputTemplate:
         fileOutputHandle.write("".join(str(row)))
 
@@ -1403,18 +1420,20 @@ def erstellePDFUrkunden():
 
     ######################################################
     # pdflatex aufrufen
-    return_value = subprocess.call(['pdflatex', fileOutputUrkunde], shell=False)
+    return_value = subprocess.call(['pdflatex', fileTemplateOutUrkunde], 
+        shell=False)
     if return_value != 0:
         print("pdflatex konnte nicht aufgerufen werden. Der folgende Befehl "
-            "konnte nicht ausgeführt werden:\npdflatex " + fileOutputUrkunde)
+            "konnte nicht ausgeführt werden:\npdflatex " + \
+            fileTemplateOutUrkunde)
         return 1
-    return_value = subprocess.call(['pdflatex', fileOutputUrkunde], shell=False)
+    return_value = subprocess.call(['pdflatex', fileTemplateOutUrkunde], 
+        shell=False)
     if return_value != 0:
         print("pdflatex konnte nicht aufgerufen werden. Der folgende Befehl "
-            "konnte nicht ausgeführt werden:\npdflatex " + fileOutputUrkunde)
+            "konnte nicht ausgeführt werden:\npdflatex " + \
+            fileTemplateOutUrkunde)
         return 1
-        
-        
 
 
     ######################################################
@@ -1606,8 +1625,7 @@ def erstellePDFUrkunden():
             
     ######################################################
     # Schreibe Urkunden Template
-    fileOutputErgebnisliste = fileTemplateErgebnisliste + ".temp"
-    fileOutputHandle = open (fileOutputErgebnisliste, "wt")
+    fileOutputHandle = open (fileTemplateOutErgebnisliste, "wt")
     for row in dataInputTemplate:
         fileOutputHandle.write("".join(str(row)))
 
@@ -1616,19 +1634,19 @@ def erstellePDFUrkunden():
 
     ######################################################
     # pdflatex aufrufen
-    return_value = subprocess.call(['pdflatex', fileOutputErgebnisliste], 
+    return_value = subprocess.call(['pdflatex', fileTemplateOutErgebnisliste], 
         shell=False)
     if return_value != 0:
         print("pdflatex konnte nicht aufgerufen werden. Der folgende Befehl "
             "konnte nicht ausgeführt werden:\npdflatex " + \
-            fileOutputErgebnisliste)
+            fileTemplateOutErgebnisliste)
         return 1
-    return_value = subprocess.call(['pdflatex', fileOutputErgebnisliste], 
+    return_value = subprocess.call(['pdflatex', fileTemplateOutErgebnisliste], 
         shell=False)
     if return_value != 0:
         print("pdflatex konnte nicht aufgerufen werden. Der folgende Befehl "
             "konnte nicht ausgeführt werden:\npdflatex " + \
-            fileOutputErgebnisliste)
+            fileTemplateOutErgebnisliste)
         return 1
 
 
