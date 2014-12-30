@@ -1,3 +1,22 @@
+"""
+This file is part of DLRG-Wettkampf.
+
+    Foobar is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Foobar is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with DLRG-Wettkampf.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+
+# DLRG-Wettkampf
 from lib import helper
 
 
@@ -120,21 +139,8 @@ def erstellePDFLaufkarten(fileTemplateLaufkarte, fileTemplateOutLaufkarte, fileO
 
     ######################################################
     # pdflatex aufrufen
-    rv = subprocess.call(['pdflatex', fileTemplateOutLaufkarte], 
-        shell=False)
-    if rv != 0:
-        print("pdflatex konnte nicht aufgerufen werden. Der folgende Befehl "
-            "konnte nicht ausgeführt werden:\npdflatex " + \
-            fileTemplateOutLaufkarte)
-        return 1
-    rv = subprocess.call(['pdflatex', fileTemplateOutLaufkarte], 
-        shell=False)
-    if rv != 0:
-        print("pdflatex konnte nicht aufgerufen werden. Der folgende Befehl "
-            "konnte nicht ausgeführt werden:\npdflatex " + \
-            fileTemplateOutLaufkarte)
-        return 1
+    rv = callPDFlatex(fileTemplateOutLaufkarte)
 
-    return 0
+    return rv
 
 

@@ -1,29 +1,18 @@
 """
-This program is free software: you can redistribute it and/or modify
+This file is part of DLRG-Wettkampf.
+
+    Foobar is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
+    Foobar is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-    Dieses Programm ist Freie Software: Sie können es unter den Bedingungen
-    der GNU General Public License, wie von der Free Software Foundation,
-    Version 3 der Lizenz oder (nach Ihrer Wahl) jeder neueren
-    veröffentlichten Version, weiterverbreiten und/oder modifizieren.
-
-    Dieses Programm wird in der Hoffnung, dass es nützlich sein wird, aber
-    OHNE JEDE GEWÄHRLEISTUNG, bereitgestellt; sogar ohne die implizite
-    Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
-    Siehe die GNU General Public License für weitere Details.
-
-    Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
-    Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
+    along with DLRG-Wettkampf.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 ######################################################
@@ -56,9 +45,6 @@ fileOutputGesamtplatz="out/namelist_gesamt.csv"
 # sortiert
 fileOutputAlstersklasseplatz="out/namelist_altersklasse.csv"
 
-# Ordner fuer Outputdateien
-fileOutputFolder="out"
-
 # Dateinamen der zu speichernden Beispiel-Wettkampflisten
 fileOutputWettkampflisteBeispiel="in/wettkampfliste-beispiel.csv"
 
@@ -68,6 +54,10 @@ fileOutputRekordeBeispiel="in/rekorde-beispiel.csv"
 
 ######################################################
 # Latex Templates
+
+# Dateiname des zu lesenden Meldelisten-Templates
+fileTemplateMeldeliste="template/meldeliste/meldeliste.tex"
+fileTemplateOutMeldeliste="out/meldeliste.tex"
 
 # Dateiname des zu lesenden Urkunden-Templates
 fileTemplateUrkunde="template/urkunden/urkunde.tex"
@@ -81,9 +71,10 @@ fileTemplateOutErgebnisliste="out/ergebnisliste.tex"
 fileTemplateLaufliste="template/lauflisten/laufliste.tex"
 fileTemplateOutLaufliste="out/laufliste.tex"
 
-# Dateiname des zu lesenden Lauflisten-Templates
+# Dateiname des zu lesenden Laufkarten-Templates
 fileTemplateLaufkarte="template/laufkarten/laufkarte.tex"
 fileTemplateOutLaufkarte="out/laufkarte.tex"
+
 
 ######################################################
 ## No Configuration after this
@@ -91,11 +82,7 @@ fileTemplateOutLaufkarte="out/laufkarte.tex"
 
 
 # system
-import csv
 import sys
-from datetime import date
-from datetime import datetime
-import os.path
 
 # DLRG-Wettkampf
 from lib import meldeliste
@@ -137,10 +124,17 @@ def printHilfe (programname):
                 "                            eine Distanz, die Einheit der Distanz\n"
                 "                            und einen Text, der auf den Urkunden benutzt\n"
                 "                            wird.\n"
-                "  -es, --erstelle-stammdaten   es wird die Rekordliste und Wettkampfliste\n"
-                "                            benutzt, um eine Stammdatenbank-Template zu\n"
-                "                            erstellen. In diesem Template können dann alle\n"
-                "                            Wettkampfzeiten eingetragen werden.\n"
+                "  -em, --erstelle-meldeliste   aus der Rekorde-Liste und der\n"
+                "                            Wettkampfliste wird eine Meldeliste erstellt.\n"
+                "  -emp, --erstelle-meldeliste-pdf   aus der ausgefüllten Meldeliste wird\n" 
+                "                            ein pdf mittels pdflatex erstellt.\n"
+                "  -el, --erstelle-laufliste    aus der Meldeliste wird eine\n"
+                "                            Laufliste erzeugt.\n"
+                "  -ek, --erstelle-laufkarte    aus der Laufliste werden die\n"
+                "                            Laufkarten erzeugt.\n"
+                "  -es, --erstelle-stammdaten   aus der Meldeliste wird eine\n"
+                "                            Stammdatenbank erstellt, in der die\n"
+                "                            Schwimmzeiten eingetragen werden.\n"
                 "  -eu, --erstelle-urkunden  Es werden alle Puntke und Platzierungen\n"
                 "                            berechnet.\n"
                 "                            Diese werden verschieden sortiert im Ordner\n"
@@ -173,7 +167,7 @@ def main(argv=None):
                 arg == "?"):
             printHilfe(sys.argv[0])
 
-        elif (arg == "--erstelle-rekorde-beispiel" or
+        elif(arg == "--erstelle-rekorde-beispiel" or
                 arg == "-er"):
             rv = rekorde.erstelleRekordeBeispiel(
                 fileOutputRekordeBeispiel, 
@@ -181,7 +175,7 @@ def main(argv=None):
             if rv != 0:
                 sys.exit(rv)
 
-        elif (arg == "--erstelle-wettkampfliste-beispiel" or
+        elif(arg == "--erstelle-wettkampfliste-beispiel" or
                 arg == "-ew"):
             rv = wettkampfliste.erstelleWettkampflisteBeispiel(
                 fileOutputWettkampflisteBeispiel, 
@@ -189,7 +183,7 @@ def main(argv=None):
             if rv != 0:
                 sys.exit(rv)
 
-        elif (arg == "--erstelle-meldeliste" or
+        elif(arg == "--erstelle-meldeliste" or
                 arg == "-em"):
             rv = meldeliste.erstelleMeldeliste(
                 fileInputWettkampfliste, 
@@ -198,7 +192,17 @@ def main(argv=None):
             if rv != 0:
                 sys.exit(rv)
 
-        elif (arg == "--erstelle-laufliste" or
+        elif(arg == "--erstelle-meldeliste-pdf" or
+                arg == "-emp"):
+            rv = meldeliste.erstellePDFMeldeliste(
+                fileTemplateMeldeliste, 
+                fileTemplateOutMeldeliste, 
+                fileInputMeldeliste, 
+                fileInputWettkampfliste)
+            if rv != 0:
+                sys.exit(rv)
+
+        elif(arg == "--erstelle-laufliste" or
                 arg == "-el"):
             rv = lauflisten.erstelleLauflisten(
                 fileInputMeldeliste, 
@@ -215,7 +219,7 @@ def main(argv=None):
             if rv != 0:
                 sys.exit(rv)
 
-        elif (arg == "--erstelle-laufkarte" or
+        elif(arg == "--erstelle-laufkarte" or
                 arg == "-ek"):
             rv = laufkarten.erstelleLaufkarte(
                 fileOutputLaufliste, 
@@ -230,7 +234,7 @@ def main(argv=None):
             if rv != 0:
                 sys.exit(rv)
 
-        elif (arg == "--erstelle-stammdaten" or
+        elif(arg == "--erstelle-stammdaten" or
                 arg == "-es"):
             rv = stammdaten.erstelleStammdaten(
                 fileInputWettkampfliste, 
@@ -240,7 +244,7 @@ def main(argv=None):
             if rv != 0:
                 sys.exit(rv)
 
-        elif (arg == "--erstelle-urkunden" or
+        elif(arg == "--erstelle-urkunden" or
                 arg == "-eu"):
             rv = ergebnisliste.erstelleErgebnisliste(
                 fileInputStammdaten, 
@@ -266,7 +270,7 @@ def main(argv=None):
             if rv != 0:
                 sys.exit(rv)
 
-        elif (len(sys.argv) == 1):
+        elif(len(sys.argv) == 1):
             rv = printHilfe(sys.argv[0])
             if rv != 0:
                 sys.exit(rv)

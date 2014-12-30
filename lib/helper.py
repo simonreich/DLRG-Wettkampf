@@ -1,4 +1,22 @@
+"""
+This file is part of DLRG-Wettkampf.
 
+    Foobar is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Foobar is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with DLRG-Wettkampf.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+
+# system
 from datetime import date
 from datetime import datetime
 import operator
@@ -55,7 +73,7 @@ def fileWrite(fileName, data, dataHeader=""):
     # Datei schliessen
     fileOutputHandle.close()
 
-    print ("Die Datei" + fileName + \
+    print ("Die Datei " + fileName + \
         " wurde erfolgreich geschrieben.")
 
     return 0
@@ -102,7 +120,7 @@ def fileWriteTemplate(fileName, data):
     # Datei schliessen
     fileOutputHandle.close()
 
-    print ("Die Datei" + fileName + \
+    print ("Die Datei " + fileName + \
         " wurde erfolgreich geschrieben.")
 
     return 0
