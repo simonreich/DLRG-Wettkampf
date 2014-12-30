@@ -1,0 +1,251 @@
+from lib import helper
+
+
+# Sanity Check
+def sanityCheckLauflisten(fileInputMeldeliste, dataInputStammdatenHeader):
+    """ Sanity Check der Input Daten
+        fileInputMeldeliste: 
+    """
+    # Meldeliste
+    data = helper.fileOpen(fileInputMeldeliste)
+    if data == 1:
+        return 1
+
+    dataInput = [[0 for x in range(0)] for x in range(0)]
+    dataInputHeader = []
+
+    rownum=0
+    for row in data:
+        if rownum == 0:
+            dataInputHeader = row
+        else:
+            dataInput.append(row)
+        rownum += 1
+
+    if len(dataInputHeader)-len(dataInputStammdatenHeader) <= 0:
+        print("Die Datei " + fileInputMeldeliste + " enthält zu wenig"
+            "Wettkämpfe.")
+        return 1
+
+    if rownum < 1:
+        print("Die Datei " + fileInputMeldeliste + " enthält zu wenig"
+            "Teilnehmer.")
+        return 1
+
+    return 0
+
+
+# Berechnet die Lauflisten
+def erstelleLauflisten(fileInputMeldeliste, dataInputStammdatenHeader, fileOutputLaufliste, BahnenAnzahl):
+    """ Berechnet Lauflisten aus der Meldeliste
+    """
+    # Sanity Check
+    rv = sanityCheckLauflisten(fileInputMeldeliste, dataInputStammdatenHeader)
+    if rv != 0:
+        return rv
+
+    ######################################################
+    # Erstelle Header
+    dataOutputHeader = ["Lauf", "WK"]
+    dataOutput = [[0 for x in range(0)] for x in range(0)]
+
+    for rownum in range(BahnenAnzahl):
+        dataOutputHeader.append("Bahn" + str(rownum+1))
+
+
+    ######################################################
+    # Oeffne Meldeliste und erstelle Liste
+    data = helper.fileOpen(fileInputMeldeliste)
+    if data == 1:
+        return 1
+
+    dataInputHeader = []
+    dataInput = [[0 for x in range(0)] for x in range(0)]
+
+    # Lade csv in Array
+    rownum=0
+    for row in data:
+        if rownum == 0:
+            dataInputHeader = row
+        else:
+            dataInput.append(row)
+        rownum += 1
+
+    # Im Array alle Zeichen != "" mit Namen ersetzen
+    dataInputAnzahlStammdaten = len(dataInputStammdatenHeader)
+    rownum=0
+    for row in dataInput:
+        rowName = row[2] + ", " + row[1]
+        cellnum=0
+        for cell in row:
+            if (cellnum >= dataInputAnzahlStammdaten and
+                str(cell) != ""):
+                dataInput[rownum][cellnum] = rowName
+            cellnum += 1
+        rownum += 1
+            
+
+    ######################################################
+    # Verteile Schwimmer
+
+    # wknum 0, ..., WKmax-1
+    for wknum in range(len(dataInputHeader)-dataInputAnzahlStammdaten):
+        dataInputSpalte = dataInputAnzahlStammdaten+wknum
+        laufNamen = []
+        rownum=0
+        for row in dataInput:
+            if dataInput[rownum][dataInputSpalte] != "":
+                laufNamen.append(dataInput[rownum][dataInputSpalte])
+            rownum += 1
+
+        laufNamen.insert(0, wknum+1)
+        dataOutput.append(laufNamen)
+
+    # Zeilen mit mehr als BahnenAnzahl Eintraege in die naechste Zeile 
+    # verschieben
+    rownum=0
+    for row in dataOutput:
+        if len(row) > BahnenAnzahl:
+            rowNeu = []
+
+            cellnum=0
+            for cell in row:
+                if cellnum > BahnenAnzahl:
+                    rowNeu.append(cell)
+                cellnum += 1
+
+            rowNeu.insert(0, dataOutput[rownum][0])
+            dataOutput.insert(rownum+1, rowNeu)
+
+        rownum += 1
+
+    # Alle Eintraege > BahnenAnzahl loeschen
+    rownum=0
+    for row in dataOutput:
+        if len(row) > BahnenAnzahl:
+            rowNeu = []
+
+            cellnum=0
+            for cell in row:
+                if cellnum <= BahnenAnzahl:
+                    rowNeu.append(cell)
+                cellnum += 1
+
+            del dataOutput[rownum]
+            dataOutput.insert(rownum, rowNeu)
+
+        rownum += 1
+
+    # Starter, die alleine sind verteilen
+    rownum=0
+    for row in dataOutput:
+        if (len(row) == 2 and
+                row[0] == dataOutput[rownum-1][0]):
+            dataOutput[rownum].insert(1, dataOutput[rownum-1][BahnenAnzahl])
+            del dataOutput[rownum-1][BahnenAnzahl]
+        rownum += 1
+
+    # Leerbahnen einfuegen auf Bahn 1
+    rownum=0
+    for row in dataOutput:
+        if len(row)-1 < BahnenAnzahl:
+            dataOutput[rownum].insert(1, "")
+        rownum += 1
+
+    # Leerbahnen einfuegen abschliessend
+    rownum=0
+    for row in dataOutput:
+        if len(row)-1 < BahnenAnzahl:
+            for cell in range(BahnenAnzahl-len(row)+1):
+                dataOutput[rownum].append("")
+        rownum += 1
+
+    # Laufnummer einfuegen
+    rownum=0
+    for row in dataOutput:
+        dataOutput[rownum].insert(0, rownum+1)
+        rownum += 1
+
+
+    ######################################################
+    # Daten speichern
+    rv = helper.fileWrite(fileOutputLaufliste, dataOutput, dataOutputHeader)
+
+    return rv
+
+
+# Berechnet die Lauflisten
+def erstellePDFLauflisten(fileTemplateLaufliste, fileTemplateOutLaufliste,  fileOutputLaufliste, BahnenAnzahl):
+    """ Berechnet Lauflisten aus der Meldeliste
+    """
+
+    ######################################################
+    # Oeffne Ergebnisliste Template
+    data = helper.fileOpenTemplate(fileTemplateLaufliste)
+    if data == 1:
+        return 1
+
+    rownum = 0
+    for row in data:
+        if row.find("<template:laufliste>") != -1:
+            del data[rownum]
+
+            # Pruefen, ob die Tabelle auf eine Seite passt.
+            # Es passen Stammdaten und 6 WK auf die erste Seite
+            if BahnenAnzahl <= 6:
+                # Header Tabelle
+                row1 = r"\begin{longtable}{"
+                row1 += r"p{0.5cm} c |"
+                for rownum1 in range(BahnenAnzahl):
+                    row1 += r" | l"
+                row1 += "}\n"
+                # Ueberschrift
+                row1 += "Lauf & WK"
+                for rownum1 in range(BahnenAnzahl):
+                    row1 = row1 + r" & Bahn " + str(rownum1+1)
+                row1 += "\\\\ \hline\n"
+                # Tabelle
+                row1 += r"\DTLloaddb{names}{" + fileOutputLaufliste + "}\n"
+                row1 += r"\DTLforeach{names}{"
+                row1 += r"\dlauf=Lauf, \dwk=WK"
+                for rownum1 in range (BahnenAnzahl):
+                    row1 += r", \dbahn" + helper.zahl2String(rownum1+1) + r"=Bahn" + \
+                        str(rownum1+1)
+                row1 += "}{\n"
+                row1 += r"\dlauf & \dwk"
+                for rownum1 in range (BahnenAnzahl):
+                    row1 += r"& \PrintName{\dbahn" + helper.zahl2String(rownum1+1) + \
+                        r"}"
+                row1 += "\\\\\n}\n"
+                # Footer Tabelle
+                row1 += "\end{longtable}\n"
+
+                data.insert(rownum, row1)
+        rownum += 1
+
+
+    ######################################################
+    # Schreibe Lauflisten Template
+    rv = helper.fileWriteTemplate(fileTemplateOutLaufliste, data)
+    if rv != 0:
+        return rv
+
+
+    ######################################################
+    # pdflatex aufrufen
+    rv = subprocess.call(['pdflatex', fileTemplateOutLaufliste], 
+        shell=False)
+    if rv != 0:
+        print("pdflatex konnte nicht aufgerufen werden. Der folgende Befehl "
+            "konnte nicht ausgeführt werden:\npdflatex " + \
+            fileTemplateOutLaufliste)
+        return 1
+    rv = subprocess.call(['pdflatex', fileTemplateOutLaufliste], 
+        shell=False)
+    if rv != 0:
+        print("pdflatex konnte nicht aufgerufen werden. Der folgende Befehl "
+            "konnte nicht ausgeführt werden:\npdflatex " + \
+            fileTemplateOutLaufliste)
+        return 1
+
+    return 0
