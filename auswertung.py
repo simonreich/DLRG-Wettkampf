@@ -18,7 +18,7 @@ This file is part of DLRG-Wettkampf.
 ######################################################
 
 # Dateiname der zu lesenden Stammdaten
-fileInputStammdaten="stammdaten.csv"
+fileInputStammdaten="in/stammdaten.csv"
 
 # Dateiname der zu lesenden Meldeliste
 fileInputMeldeliste="in/meldeliste.csv"
