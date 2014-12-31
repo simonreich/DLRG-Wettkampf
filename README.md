@@ -14,7 +14,7 @@ Das Programm erstellt nach jedem Arbeitsschritt entweder eine csv-Tabelle
 ```
 +-------------+ +--------------------+
 | 1)          | | 1)                 |
-| rekorce.csv | | wettkampfliste.csv |
+| rekorde.csv | | wettkampfliste.csv |
 |             | |                    |
 +-------------+ +--------------------+
       |                   |
@@ -61,7 +61,7 @@ Im Flowchart sind verschiedene Arbeitsschritte eingezeichnet. Diese sind folgen
 dem Ablauf eines Wettkampfs und werden im weiteren beschrieben.
 
 Für alle pdfs wird pdflatex verwendet (welches installiert sein muss). Die 
-verwendeten Templates ligen im Ordner template/
+verwendeten Templates liegen im Ordner template/
 
 1. 
    1. Mit
@@ -85,7 +85,7 @@ verwendeten Templates ligen im Ordner template/
 
 3. Mit
    $ ./auswertung.py --erstelle-meldeliste-pdf
-   wird aus der ausgefüllten tabelle eine pdf-Datei erzeugt, die als Meldeliste
+   wird aus der ausgefüllten Tabelle eine pdf-Datei erzeugt, die als Meldeliste
    veröffentlicht werden kann.
 
 4. Mit
@@ -109,3 +109,5 @@ verwendeten Templates ligen im Ordner template/
    werden die Punkte berechnet und im Ordner out/ gespeichert.
    Zusätzlich wird mit pdflatex Urkunden und Ergebnislisten erstellt. Die
    Templates liegen im Ordner template/
+   Für die Gesamtpunkte wird der Durchschnitt der drei höchsten Punktzahlen 
+   genommen.
