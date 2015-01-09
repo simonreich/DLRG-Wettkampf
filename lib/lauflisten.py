@@ -252,6 +252,6 @@ def erstellePDFLauflisten(fileTemplateLaufliste, fileTemplateOutLaufliste,  file
 
     ######################################################
     # pdflatex aufrufen
-    rv = callPDFlatex(fileTemplateOutMeldeliste)
+    rv = helper.callPDFlatex(fileTemplateOutLaufliste)
 
     return rv
