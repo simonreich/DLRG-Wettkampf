@@ -19,6 +19,9 @@ This file is part of DLRG-Wettkampf.
 # DLRG-Wettkampf
 from lib import helper
 
+# System
+import random
+
 
 # Sanity Check
 def sanityCheckLauflisten(fileInputMeldeliste, dataInputStammdatenHeader):
@@ -120,11 +123,22 @@ def erstelleLauflisten(fileInputMeldeliste, dataInputStammdatenHeader, fileOutpu
         laufNamen.insert(0, wknum+1)
         dataOutput.append(laufNamen)
 
+    # Reihenfolge der Schwimmer auf Bahnen randomisieren
+    rownum=0
+    for row in dataOutput:
+        if len(row) > 2:
+            wknr = row[0]
+            del row[0]
+            random.shuffle(row)
+            row.insert(0, wknr)
+            dataOutput[rownum] = row
+        rownum += 1
+
     # Zeilen mit mehr als BahnenAnzahl Eintraege in die naechste Zeile 
     # verschieben
     rownum=0
     for row in dataOutput:
-        if len(row) > BahnenAnzahl:
+        if len(row)-1 > BahnenAnzahl:
             rowNeu = []
 
             cellnum=0
@@ -222,9 +236,9 @@ def erstellePDFLauflisten(fileTemplateLaufliste, fileTemplateOutLaufliste,  file
                 row1 += "Lauf & WK"
                 for rownum1 in range(BahnenAnzahl):
                     row1 = row1 + r" & Bahn " + str(rownum1+1)
-                row1 += "\\\\ \hline\n"
+                row1 += "\\\\ \hline % \n"
                 # Tabelle
-                row1 += r"\DTLloaddb{names}{" + fileOutputLaufliste + "}\n"
+                row1 += r"\DTLloaddb{names}{" + fileOutputLaufliste + "} %\n"
                 row1 += r"\DTLforeach{names}{"
                 row1 += r"\dlauf=Lauf, \dwk=WK"
                 for rownum1 in range (BahnenAnzahl):
@@ -235,7 +249,7 @@ def erstellePDFLauflisten(fileTemplateLaufliste, fileTemplateOutLaufliste,  file
                 for rownum1 in range (BahnenAnzahl):
                     row1 += r"& \PrintName{\dbahn" + helper.zahl2String(rownum1+1) + \
                         r"}"
-                row1 += "\\\\\n}\n"
+                row1 += "\\\\[6pt]\n}\n"
                 # Footer Tabelle
                 row1 += "\end{longtable}\n"
 
