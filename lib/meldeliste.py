@@ -122,8 +122,7 @@ def erstellePDFMeldeliste(fileTemplateMeldeliste, fileTemplateOutMeldeliste, fil
                 row1 += r" c"
             row1 = row1 + "}\n"
             # Ueberschrift
-            row1 += ("Nr & Name & Vorname & Team "
-                "Pkt")
+            row1 += ("Nr & Name & Vorname & Team ")
             for rownum1 in range(dataInputAnzahlWK):
                 row1 = row1 + r" & WK " + str(rownum1+1)
             row1 += "\\\\ \hline\n"
