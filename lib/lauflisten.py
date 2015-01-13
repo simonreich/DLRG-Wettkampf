@@ -123,17 +123,6 @@ def erstelleLauflisten(fileInputMeldeliste, dataInputStammdatenHeader, fileOutpu
         laufNamen.insert(0, wknum+1)
         dataOutput.append(laufNamen)
 
-    # Reihenfolge der Schwimmer auf Bahnen randomisieren
-    rownum=0
-    for row in dataOutput:
-        if len(row) > 2:
-            wknr = row[0]
-            del row[0]
-            random.shuffle(row)
-            row.insert(0, wknr)
-            dataOutput[rownum] = row
-        rownum += 1
-
     # Zeilen mit mehr als BahnenAnzahl Eintraege in die naechste Zeile 
     # verschieben
     rownum=0
@@ -169,13 +158,35 @@ def erstelleLauflisten(fileInputMeldeliste, dataInputStammdatenHeader, fileOutpu
 
         rownum += 1
 
-    # Starter, die alleine sind verteilen
+    # Starter, die alleine sind verteilen: n*BahnenAnzahl+1
     rownum=0
     for row in dataOutput:
         if (len(row) == 2 and
-                row[0] == dataOutput[rownum-1][0]):
+                row[0] == dataOutput[rownum-1][0] and
+                len(dataOutput[rownum-1]) == BahnenAnzahl+1):
             dataOutput[rownum].insert(1, dataOutput[rownum-1][BahnenAnzahl])
             del dataOutput[rownum-1][BahnenAnzahl]
+        rownum += 1
+
+    # Starter, die zu zweit sind verteilen: n*BahnenAnzahl+2
+    rownum=0
+    for row in dataOutput:
+        if (len(row) == 3 and
+                row[0] == dataOutput[rownum-1][0] and
+                len(dataOutput[rownum-1]) == BahnenAnzahl+1):
+            dataOutput[rownum].insert(1, dataOutput[rownum-1][BahnenAnzahl])
+            del dataOutput[rownum-1][BahnenAnzahl]
+        rownum += 1
+
+    # Reihenfolge der Schwimmer auf Bahnen randomisieren
+    rownum=0
+    for row in dataOutput:
+        if len(row) > 2:
+            wknr = row[0]
+            del row[0]
+            random.shuffle(row)
+            row.insert(0, wknr)
+            dataOutput[rownum] = row
         rownum += 1
 
     # Leerbahnen einfuegen auf Bahn 1
