@@ -60,7 +60,7 @@ def erstelleStammdaten(fileInputWettkampfliste, fileInputMeldeliste, fileInputSt
     for row in dataOutput:
         cellnum=0
         for cell in row:
-            if (rownum >= dataInputAnzahlStammdaten):
+            if (cellnum >= dataInputAnzahlStammdaten):
                 dataOutput[rownum][cellnum] = ""
             cellnum += 1
         rownum += 1
