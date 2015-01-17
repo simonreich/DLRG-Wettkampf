@@ -140,7 +140,7 @@ def erstellePDFLaufkarten(fileTemplateLaufkarte, fileTemplateOutLaufkarte, fileO
 
     ######################################################
     # pdflatex aufrufen
-    rv = callPDFlatex(fileTemplateOutLaufkarte)
+    rv = helper.callPDFlatex(fileTemplateOutLaufkarte)
 
     return rv
 
