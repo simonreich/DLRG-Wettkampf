@@ -44,8 +44,33 @@
 \DTLforeach{names}
 {<template:stammdaten>}{
 
+% Hintergrundbild
+\ThisLRCornerWallPaper{1.0}{./template/urkunden/figures/schwimmer.jpg}
 
-\vspace*{7.5cm}
+% Header
+\begin{minipage}[l]{3cm}%
+	\includegraphics[width=0.9\textwidth]{./template/urkunden/figures/logo_adler_blau.jpg}
+\end{minipage}%
+\hfill
+\begin{minipage}[r]{15cm}%
+	\centering
+	\fontsize{60}{40} \selectfont{ \makebox[\textwidth][s]{U R K U N D E} \par}
+\end{minipage}
+
+
+\vspace{1cm}
+
+
+% Ueberschrift
+\begin{center}
+	\fontsize{40}{36} \selectfont{1. Neujahrs-Pokal}\\
+	\vspace{1cm}
+	\fontsize{30}{24} \selectfont{DLRG Ortsgruppe G\"ottingen}
+\end{center}
+
+
+\vspace{1cm}
+
 
 % Name und Platz
 \begin{center}
