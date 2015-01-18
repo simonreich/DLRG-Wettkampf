@@ -386,7 +386,8 @@ def erstellePDFUrkunden(fileInputWettkampfliste, fileTemplateUrkunde, fileTempla
     dataInputWettkampfliste = [[0 for x in range(0)] for x in range(0)]
     rownum=0
     for row in data:
-        dataInputWettkampfliste.append(row)
+        if rownum > 0:
+            dataInputWettkampfliste.append(row)
         rownum += 1
     dataInputAnzahlWK = rownum-1
 
