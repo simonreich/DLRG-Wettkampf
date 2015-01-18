@@ -44,7 +44,7 @@ fileOutputGesamtplatz="out/namelist_gesamt.csv"
 
 # Dateinamen der zu speichernden Ergebnislisten, nach Altersklassenplatz
 # sortiert
-fileOutputAlstersklasseplatz="out/namelist_altersklasse.csv"
+fileOutputAltersklasseplatz="out/namelist_altersklasse.csv"
 
 # Dateinamen der zu speichernden Beispiel-Wettkampflisten
 fileOutputWettkampflisteBeispiel="in/wettkampfliste-beispiel.csv"
@@ -252,7 +252,7 @@ def main(argv=None):
                 fileInputRekorde, 
                 fileInputWettkampfliste, 
                 fileOutputAlpha, 
-                fileOutputAlstersklasseplatz, 
+                fileOutputAltersklasseplatz, 
                 fileOutputGesamtplatz,
                 dataInputStammdatenHeader)
             if rv != 0:
@@ -267,7 +267,7 @@ def main(argv=None):
             rv = ergebnisliste.erstellePDFErgebnisliste(
                 fileTemplateErgebnisliste, 
                 fileTemplateOutErgebnisliste,
-                fileOutputAlstersklasseplatz)
+                fileOutputAlpha)
             if rv != 0:
                 sys.exit(rv)
 

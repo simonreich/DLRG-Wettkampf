@@ -120,7 +120,7 @@ def sanityCheckErgebnisliste(fileInputRekorde, fileInputWettkampfliste, fileInpu
 
 
 # Erstelle Ergebnisliste
-def erstelleErgebnisliste(fileInputStammdaten, fileInputRekorde, fileInputWettkampfliste, fileOutputAlpha, fileOutputAlstersklasseplatz, fileOutputGesamtplatz, dataInputStammdatenHeader):
+def erstelleErgebnisliste(fileInputStammdaten, fileInputRekorde, fileInputWettkampfliste, fileOutputAlpha, fileOutputAltersklasseplatz, fileOutputGesamtplatz, dataInputStammdatenHeader):
     """ Berechnet Punkte und Ranking
     """
     # Sanity Check der Input Daten
@@ -361,7 +361,7 @@ def erstelleErgebnisliste(fileInputStammdaten, fileInputRekorde, fileInputWettka
             dataInputAnzahlStammdaten, 
             dataInputAnzahlStammdaten+3)):
         data.append(row)
-    rv = helper.fileWrite(fileOutputAlstersklasseplatz, data, dataOutputHeader)
+    rv = helper.fileWrite(fileOutputAltersklasseplatz, data, dataOutputHeader)
     if rv != 0:
         return rv
 
@@ -487,7 +487,7 @@ def erstellePDFUrkunden(fileInputWettkampfliste, fileTemplateUrkunde, fileTempla
     return rv
 
 
-def erstellePDFErgebnisliste(fileTemplateErgebnisliste, fileTemplateOutErgebnisliste, fileOutputAlstersklasseplatz):
+def erstellePDFErgebnisliste(fileTemplateErgebnisliste, fileTemplateOutErgebnisliste, fileOutputAltersklasseplatz):
     """ Erstellt ein PDF aus der Ergebnisliste
     """
     # Oeffne Ergebnisliste Template
@@ -518,7 +518,7 @@ def erstellePDFErgebnisliste(fileTemplateErgebnisliste, fileTemplateOutErgebnisl
                         str(rownum1+1) + r"}"
                 row1 += "\\\\ \hline\n"
                 # Tabelle
-                row1 += r"\DTLloaddb{names}{" + fileOutputAlstersklasseplatz + \
+                row1 += r"\DTLloaddb{names}{" + fileOutputAltersklasseplatz + \
                     "}\n"
                 row1 += r"\DTLforeach{names}{"
                 row1 += (r"\dnummer=Nummer, \dvorname=Vorname, "
@@ -562,7 +562,7 @@ def erstellePDFErgebnisliste(fileTemplateErgebnisliste, fileTemplateOutErgebnisl
                         str(rownum1+1) + r"}"
                 row1 += "\\\\ \hline\n"
                 # Tabelle
-                row1 += r"\DTLloaddb{names}{" + fileOutputAlstersklasseplatz + \
+                row1 += r"\DTLloaddb{names}{" + fileOutputAltersklasseplatz + \
                     "}\n"
                 row1 += r"\DTLforeach{names}{"
                 row1 += (r"\dnummer=Nummer, \dvorname=Vorname, "
