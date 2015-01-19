@@ -141,6 +141,9 @@ def printHilfe (programname):
                 "                            Weiterhin werden mit pdflatex Urkunden und\n"
                 "                            Ergebnislisten erstellt. Dafür werden die\n"
                 "                            Templates im Ordner template/ benutzt.\n"
+                "  -eut, --erstelle-urkunden-test  Prüft, ob für alle gemeldeten\n"
+                "                            Schwimmer eine Zeit eingetragen ist\n"
+                "                            und vice versa.\n"
                 "  -h, --hilfe, --help       Dieser Hilfetext.")
 
     print(hilfeText)
@@ -268,6 +271,15 @@ def main(argv=None):
                 fileTemplateErgebnisliste, 
                 fileTemplateOutErgebnisliste,
                 fileOutputAlpha)
+            if rv != 0:
+                sys.exit(rv)
+
+        elif(arg == "--erstelle-urkunden-test" or
+                arg == "-eut"):
+            rv = ergebnisliste.testeStammdatenMeldeliste(
+                fileInputStammdaten, 
+                fileInputMeldeliste, 
+                fileInputWettkampfliste)
             if rv != 0:
                 sys.exit(rv)
 

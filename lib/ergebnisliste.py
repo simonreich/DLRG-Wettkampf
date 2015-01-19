@@ -684,3 +684,93 @@ def erstellePDFErgebnisliste(fileTemplateErgebnisliste, fileTemplateOutErgebnisl
     rv = helper.callPDFlatex(fileTemplateOutErgebnisliste)
 
     return rv
+
+
+# Prueft ob fuer jede Meldung eine Zeit eingetragen ist
+def testeStammdatenMeldeliste(fileInputStammdaten, fileInputMeldeliste, fileInputWettkampfliste):
+    """ Prueft ob fuer jede Meldung eine Zeit eingetragen ist
+    """
+    ######################################################
+    # Lade Stammdaten
+    
+    # Stammdaten
+    data = helper.fileOpen(fileInputStammdaten)
+    if data == 1:
+        return 1
+    
+    # Lade csv in Array
+    dataInputStammdaten = [[0 for x in range(0)] for x in range(0)]
+    dataInputStammdatenHeader = []
+    
+    rownum=0
+    for row in data:
+        if rownum == 0:
+            dataInputStammdatenHeader = row
+        else:
+            dataInputStammdaten.append (row)
+        rownum += 1
+   
+
+    ######################################################
+    # Lade Meldeliste
+    
+    # Meldeliste
+    data = helper.fileOpen(fileInputMeldeliste)
+    if data == 1:
+        return 1
+    
+    # Lade csv in Array
+    dataInputMeldeliste = [[0 for x in range(0)] for x in range(0)]
+    dataInputMeldelisteHeader = []
+    
+    rownum=0
+    for row in data:
+        if rownum == 0:
+            dataInputMeldelisteHeader = row
+        else:
+            dataInputMeldeliste.append (row)
+        rownum += 1
+   
+
+    ######################################################
+    # Suche Schwimmer, die geschwommen sind, aber nicht gemeldet waren
+    rv = 0
+    textOut = 0
+    rownumMelde = 0
+    for rowMelde in dataInputMeldeliste:
+        rownumStamm = 0
+        for rowStamm in dataInputStammdaten:
+            if (rowStamm[1].find(rowMelde[1]) != -1 and rowStamm[2].find(rowMelde[2]) != -1):
+                for cellnumMelde in range(len(rowMelde)):
+                    if cellnumMelde > 6:
+                        if len(rowMelde[cellnumMelde]) == 0 and len(rowStamm[cellnumMelde]) != 0:
+                            if textOut == 0:
+                                print("Schwimmer, die geschwommen sind, aber nicht gemeldet waren:")
+                                textOut = 1
+                            print(rowMelde[2] + ", " + rowMelde[1] + " Wettkampf: " + str(cellnumMelde-5))
+                            rv = 1
+            rownumStamm += 1
+        rownumMelde += 1
+
+
+    ######################################################
+    # Suche Schwimmer, die geschwi sind, aber nicht geschwommen sind
+    textOut = 0
+    rownumMelde = 0
+    for rowMelde in dataInputMeldeliste:
+        rownumStamm = 0
+        for rowStamm in dataInputStammdaten:
+            if (rowStamm[1].find(rowMelde[1]) != -1 and rowStamm[2].find(rowMelde[2]) != -1):
+                for cellnumMelde in range(len(rowMelde)):
+                    if cellnumMelde > 6:
+                        if len(rowMelde[cellnumMelde]) != 0 and len(rowStamm[cellnumMelde]) == 0:
+                            if textOut == 0:
+                                print("Schwimmer, die gemeldet waren, aber nicht geschwommen sind:")
+                                textOut = 1
+                            print(rowMelde[2] + ", " + rowMelde[1] + " Wettkampf: " + str(cellnumMelde-5))
+                            rv = 1
+            rownumStamm += 1
+        rownumMelde += 1
+
+
+    return rv
