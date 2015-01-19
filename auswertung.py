@@ -279,7 +279,8 @@ def main(argv=None):
             rv = ergebnisliste.testeStammdatenMeldeliste(
                 fileInputStammdaten, 
                 fileInputMeldeliste, 
-                fileInputWettkampfliste)
+                fileInputWettkampfliste,
+                dataInputAnzahlStammdaten)
             if rv != 0:
                 sys.exit(rv)
 

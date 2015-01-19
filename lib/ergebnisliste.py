@@ -687,7 +687,7 @@ def erstellePDFErgebnisliste(fileTemplateErgebnisliste, fileTemplateOutErgebnisl
 
 
 # Prueft ob fuer jede Meldung eine Zeit eingetragen ist
-def testeStammdatenMeldeliste(fileInputStammdaten, fileInputMeldeliste, fileInputWettkampfliste):
+def testeStammdatenMeldeliste(fileInputStammdaten, fileInputMeldeliste, fileInputWettkampfliste, dataInputAnzahlStammdaten):
     """ Prueft ob fuer jede Meldung eine Zeit eingetragen ist
     """
     ######################################################
@@ -742,12 +742,12 @@ def testeStammdatenMeldeliste(fileInputStammdaten, fileInputMeldeliste, fileInpu
         for rowStamm in dataInputStammdaten:
             if (rowStamm[1].find(rowMelde[1]) != -1 and rowStamm[2].find(rowMelde[2]) != -1):
                 for cellnumMelde in range(len(rowMelde)):
-                    if cellnumMelde > 6:
+                    if cellnumMelde > dataInputAnzahlStammdaten:
                         if len(rowMelde[cellnumMelde]) == 0 and len(rowStamm[cellnumMelde]) != 0:
                             if textOut == 0:
                                 print("Schwimmer, die geschwommen sind, aber nicht gemeldet waren:")
                                 textOut = 1
-                            print(rowMelde[2] + ", " + rowMelde[1] + " Wettkampf: " + str(cellnumMelde-5))
+                            print(rowMelde[2] + ", " + rowMelde[1] + " Wettkampf: " + str(cellnumMelde-dataInputAnzahlStammdaten+1))
                             rv = 1
             rownumStamm += 1
         rownumMelde += 1
@@ -762,12 +762,12 @@ def testeStammdatenMeldeliste(fileInputStammdaten, fileInputMeldeliste, fileInpu
         for rowStamm in dataInputStammdaten:
             if (rowStamm[1].find(rowMelde[1]) != -1 and rowStamm[2].find(rowMelde[2]) != -1):
                 for cellnumMelde in range(len(rowMelde)):
-                    if cellnumMelde > 6:
+                    if cellnumMelde > dataInputAnzahlStammdaten:
                         if len(rowMelde[cellnumMelde]) != 0 and len(rowStamm[cellnumMelde]) == 0:
                             if textOut == 0:
                                 print("Schwimmer, die gemeldet waren, aber nicht geschwommen sind:")
                                 textOut = 1
-                            print(rowMelde[2] + ", " + rowMelde[1] + " Wettkampf: " + str(cellnumMelde-5))
+                            print(rowMelde[2] + ", " + rowMelde[1] + " Wettkampf: " + str(cellnumMelde-dataInputAnzahlStammdaten+1))
                             rv = 1
             rownumStamm += 1
         rownumMelde += 1
