@@ -56,13 +56,13 @@ def sanityCheckLaufkarten(fileInputMeldeliste, dataInputStammdatenHeader):
 
 
 # Berechnet die Laufkarten
-def erstelleLaufkarte(fileOutputLaufliste, fileOutputLaufkarte, dataInputStammdatenHeader):
+def erstelleLaufkarte(fileOutputLaufliste, fileOutputLaufkarte, fileInputMeldeliste, dataInputStammdatenHeader):
     """ Berechnet Laufkarte aus Meldeliste
     """
 
     # Sanity Check der Input Daten
-    #if sanityCheckLaufkarten(fileInputMeldeliste, dataInputStammdatenHeader) != 0:
-    #    return 1
+    if sanityCheckLaufkarten(fileInputMeldeliste, dataInputStammdatenHeader) != 0:
+        return 1
 
     ######################################################
     # Oeffne Datei und lade csv
@@ -85,8 +85,7 @@ def erstelleLaufkarte(fileOutputLaufliste, fileOutputLaufkarte, dataInputStammda
     
 
     ######################################################
-    # Zeilen mit mehr als 1 Eintrag in die naechste Zeile 
-    # verschieben
+    # Jeweils eine Zeile fuer jeden Schwimmer ersteleln
     dataOutput = [[0 for x in range(0)] for x in range(0)]
     dataOutputHeader = ["Lauf", "WK", "Bahn", "Name"]
     rownum=0
@@ -97,7 +96,7 @@ def erstelleLaufkarte(fileOutputLaufliste, fileOutputLaufkarte, dataInputStammda
             if cellnum >= 2:
                 rowNeu.append(dataInput[rownum][0])          # Lauf
                 rowNeu.append(dataInput[rownum][1])          # WK
-                rowNeu.append(len(row)-cellnum)              # Bahn
+                rowNeu.append(cellnum-1)                     # Bahn
                 rowNeu.append(dataInput[rownum][cellnum])    # Name
                 dataOutput.append(rowNeu)
 

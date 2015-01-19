@@ -225,6 +225,7 @@ def main(argv=None):
             rv = laufkarten.erstelleLaufkarte(
                 fileOutputLaufliste, 
                 fileOutputLaufkarte,
+                fileInputMeldeliste,
                 dataInputStammdatenHeader)
             if rv != 0:
                 sys.exit(rv)
