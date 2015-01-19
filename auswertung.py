@@ -101,8 +101,6 @@ dataInputStammdatenHeader = ["Nummer", "Vorname", "Nachname", "Geburtsdatum", \
     "Mail", "Teamname"]
 global dataInputAnzahlStammdaten
 dataInputAnzahlStammdaten = len(dataInputStammdatenHeader)
-global BahnenAnzahl
-BahnenAnzahl = 5
 
 
 # Schreibe Hilfetext
@@ -209,14 +207,14 @@ def main(argv=None):
                 fileInputMeldeliste, 
                 dataInputStammdatenHeader, 
                 fileOutputLaufliste, 
-                BahnenAnzahl)
+                fileInputWettkampfliste)
             if rv != 0:
                 sys.exit(rv)
             rv =  lauflisten.erstellePDFLauflisten(
                 fileTemplateLaufliste,
                 fileTemplateOutLaufliste, 
                 fileOutputLaufliste,
-                BahnenAnzahl)
+                fileInputWettkampfliste)
             if rv != 0:
                 sys.exit(rv)
 
