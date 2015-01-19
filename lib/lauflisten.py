@@ -180,7 +180,7 @@ def erstelleLauflisten(fileInputMeldeliste, dataInputStammdatenHeader, fileOutpu
         rownum += 1
 
     # Starter, die alleine sind verteilen: n*BahnenAnzahl+1
-    for lenRow1 in range(int(BahnenAnzahlMax/2)+1):
+    for lenRow1 in range(int(BahnenAnzahlMax)):
         lenRow = lenRow1+1
 
         rownum=0
