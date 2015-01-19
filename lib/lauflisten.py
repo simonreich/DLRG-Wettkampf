@@ -75,7 +75,6 @@ def erstelleLauflisten(fileInputMeldeliste, dataInputStammdatenHeader, fileOutpu
         return 1
 
     dataInputBahnenAnzahl = []
-    global BahnenAnzahlMax
     BahnenAnzahlMax = 0
     rownum=0
     for row in data:
@@ -235,9 +234,47 @@ def erstelleLauflisten(fileInputMeldeliste, dataInputStammdatenHeader, fileOutpu
 
 
 # Berechnet die Lauflisten
-def erstellePDFLauflisten(fileTemplateLaufliste, fileTemplateOutLaufliste,  fileOutputLaufliste, BahnenAnzahl):
+def erstellePDFLauflisten(fileTemplateLaufliste, fileTemplateOutLaufliste,  fileOutputLaufliste, fileInputWettkampfliste):
     """ Berechnet Lauflisten aus der Meldeliste
     """
+
+    ######################################################
+    # Finde hoechste Anzahl an Bahnen und Daten laden
+    data = helper.fileOpen(fileOutputLaufliste)
+    if data == 1:
+        return 1
+
+    dataInputHeader = []
+    dataInput = [[0 for x in range(0)] for x in range(0)]
+
+    rownum=0
+    for row in data:
+        if rownum == 0:
+            dataInputHeader = row
+        else:
+            dataInput.append(row)
+        rownum += 1
+
+    BahnenAnzahlMax = len(dataInputHeader)-2
+
+
+    ######################################################
+    # Wettkampfbeschreibung laden
+    data = helper.fileOpen(fileInputWettkampfliste)
+    if data == 1:
+        return 1
+
+    dataInputWettkampflisteHeader = []
+    dataInputWettkampfliste = [[0 for x in range(0)] for x in range(0)]
+
+    rownum=0
+    for row in data:
+        if rownum == 0:
+            dataInputWettkampflisteHeader = row
+        else:
+            dataInputWettkampfliste.append(row)
+        rownum += 1
+
 
     ######################################################
     # Oeffne Ergebnisliste Template
@@ -255,7 +292,7 @@ def erstellePDFLauflisten(fileTemplateLaufliste, fileTemplateOutLaufliste,  file
             if BahnenAnzahlMax <= 6:
                 # Header Tabelle
                 row1 = r"\begin{longtable}{"
-                row1 += r"p{0.5cm} c |"
+                row1 += r"c c |"
                 for rownum1 in range(BahnenAnzahlMax):
                     row1 += r" | l"
                 row1 += "}\n"
@@ -263,20 +300,42 @@ def erstellePDFLauflisten(fileTemplateLaufliste, fileTemplateOutLaufliste,  file
                 row1 += "Lauf & WK"
                 for rownum1 in range(BahnenAnzahlMax):
                     row1 = row1 + r" & Bahn " + str(rownum1+1)
-                row1 += "\\\\ \hline % \n"
+                row1 += "\\\\ \hline \hline\n"
                 # Tabelle
-                row1 += r"\DTLloaddb{names}{" + fileOutputLaufliste + "} %\n"
-                row1 += r"\DTLforeach{names}{"
-                row1 += r"\dlauf=Lauf, \dwk=WK"
-                for rownum1 in range (BahnenAnzahlMax):
-                    row1 += r", \dbahn" + helper.zahl2String(rownum1+1) + r"=Bahn" + \
-                        str(rownum1+1)
-                row1 += "}{\n"
-                row1 += r"\dlauf & \dwk"
-                for rownum1 in range (BahnenAnzahlMax):
-                    row1 += r"& \PrintName{\dbahn" + helper.zahl2String(rownum1+1) + \
-                        r"}"
-                row1 += "\\\\[6pt]\n}\n"
+                WettkampfAlt = -1
+                rownum2 = 0
+                for row2 in dataInput:
+                    # Erstelle Header der Wettkaempfe
+                    if row2[1] != WettkampfAlt:
+                        if rownum2 != 0:
+                            row1 += r" & & \multicolumn{" + \
+                            str(BahnenAnzahlMax) + \
+                            r"}{ l }{}\\"
+
+                        WettkampfAlt = row2[1]
+                        row1 += r" & \textbf{" + str(row2[1]) + \
+                            r"} & \multicolumn{" + \
+                            str(BahnenAnzahlMax) + \
+                            r"}{ l }{\textbf{\unit[" + \
+                            str(dataInputWettkampfliste[int(WettkampfAlt)-1][0]) + \
+                            r"]{" + \
+                            str(dataInputWettkampfliste[int(WettkampfAlt)-1][1]) + \
+                            r"} " + \
+                            str(dataInputWettkampfliste[int(WettkampfAlt)-1][2]) + \
+                            r"}}\\[4pt]" + \
+                            "\n"
+
+                    cellnum2 = 0
+                    for cell2 in row2:
+                        if cellnum2 == 0:
+                            row1 += cell2
+                        elif cellnum2 == 1:
+                            row1 += r" & "  + cell2
+                        else:
+                            row1 += r" & \PrintName{" + cell2 + r"}"
+                        cellnum2 += 1
+                    row1 += "\\\\[4pt]\n"
+                    rownum2 += 1
                 # Footer Tabelle
                 row1 += "\end{longtable}\n"
 
