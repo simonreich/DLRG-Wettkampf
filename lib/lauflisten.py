@@ -195,15 +195,15 @@ def erstelleLauflisten(fileInputMeldeliste, dataInputStammdatenHeader, fileOutpu
             rownum += 1
 
     # Reihenfolge der Schwimmer auf Bahnen randomisieren
-    #rownum=0
-    #for row in dataOutput:
-    #    if len(row) > 2:
-    #        wknr = row[0]
-    #        del row[0]
-    #        random.shuffle(row)
-    #        row.insert(0, wknr)
-    #        dataOutput[rownum] = row
-    #    rownum += 1
+    rownum=0
+    for row in dataOutput:
+        if len(row) > 2:
+            wknr = row[0]
+            del row[0]
+            random.shuffle(row)
+            row.insert(0, wknr)
+            dataOutput[rownum] = row
+        rownum += 1
 
     # Leerbahnen einfuegen auf Bahn 1
     rownum=0
