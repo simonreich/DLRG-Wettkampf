@@ -197,7 +197,8 @@ def main(argv=None):
                 fileTemplateMeldeliste, 
                 fileTemplateOutMeldeliste, 
                 fileInputMeldeliste, 
-                fileInputWettkampfliste)
+                fileInputWettkampfliste,
+                dataInputAnzahlStammdaten)
             if rv != 0:
                 sys.exit(rv)
 

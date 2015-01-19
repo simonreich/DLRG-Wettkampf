@@ -84,7 +84,7 @@ def erstelleMeldeliste(fileInputWettkampfliste, fileInputMeldeliste, dataInputSt
     return rv
 
 
-def erstellePDFMeldeliste(fileTemplateMeldeliste, fileTemplateOutMeldeliste, fileInputMeldeliste, fileInputWettkampfliste):
+def erstellePDFMeldeliste(fileTemplateMeldeliste, fileTemplateOutMeldeliste, fileInputMeldeliste, fileInputWettkampfliste, dataInputAnzahlStammdaten):
     """ Erstellt PDFs aus der Meldeliste
     """
 
@@ -100,9 +100,30 @@ def erstellePDFMeldeliste(fileTemplateMeldeliste, fileTemplateOutMeldeliste, fil
     dataInputWettkampfliste = [[0 for x in range(0)] for x in range(0)]
     rownum=0
     for row in data:
-        dataInputWettkampfliste.append(row)
+        if rownum >= 0:
+            dataInputWettkampfliste.append(row)
         rownum += 1
     dataInputAnzahlWK = rownum-1
+
+
+    ######################################################
+    # Lade Meldeliste
+
+    # Oeffne Meldeliste und erstelle Liste
+    data = helper.fileOpen(fileInputMeldeliste)
+    if data == 1:
+        return 1
+
+    # Lade csv in Array
+    dataInputMeldeliste = [[0 for x in range(0)] for x in range(0)]
+    rownum=0
+    for row in data:
+        if rownum > 0:
+            dataInputMeldeliste.append(row)
+        rownum += 1
+
+    # Alphabetisch sortieren
+    dataInputMeldeliste = helper.sort_table_low(dataInputMeldeliste, [2, 1])
 
 
     ######################################################
@@ -118,31 +139,29 @@ def erstellePDFMeldeliste(fileTemplateMeldeliste, fileTemplateOutMeldeliste, fil
 
             # Header Tabelle
             row1 = r"\begin{longtable}{"
-            row1 += r"p{0.5cm} l l l |"
+            row1 += r"l l c ||"
             for rownum1 in range(dataInputAnzahlWK):
                 row1 += r" c"
             row1 = row1 + "}\n"
             # Ueberschrift
-            row1 += ("Nr & Name & Vorname & Team ")
+            row1 += ("Name & Vorname & AK")
             for rownum1 in range(dataInputAnzahlWK):
                 row1 = row1 + r" & WK " + str(rownum1+1)
-            row1 += "\\\\ \hline\n"
+            row1 += "\\\\ \hline \hline\n"
             # Tabelle
-            row1 += r"\DTLloaddb{names}{" + fileInputMeldeliste + \
-                "}\n"
-            row1 += r"\DTLforeach{names}{"
-            row1 += (r"\dnummer=Nummer, \dvorname=Vorname, "
-                "\dnachname=Nachname, \dgeburtsdatum=Geburtsdatum, "
-                "\dmail=Mail, \dteamname=Teamname")
-            for rownum1 in range (dataInputAnzahlWK):
-                row1 += r", \dwk" + helper.zahl2String(rownum1+1) + r"=WK" + \
-                    str(rownum1+1)
-            row1 += "}{\n"
-            row1 += r"\dnummer & \dnachname & \dvorname & \dteamname "
-            for rownum1 in range (dataInputAnzahlWK):
-                row1 += r"& \PrintX{\dwk" + helper.zahl2String(rownum1+1) + \
-                        r"}"
-            row1 += "\\\\\\hline\n}\n"
+            rownum2 = 0
+            for row2 in dataInputMeldeliste:
+                cellnum2 = 0
+                for cell2 in row2:
+                    if cellnum2 == 0:
+                        row1 += str(row2[2]) + \
+                            r" & " + str(row2[1]) + \
+                            r" & " + str(helper.berechneAltersklasse(row2[3]))
+                    elif cellnum2 >= dataInputAnzahlStammdaten:
+                        row1 += r" & " + str(cell2)
+                    cellnum2 += 1
+                row1 += "\\\\ \\hline\n"
+                rownum2 += 1
             # Footer Tabelle
             row1 += "\end{longtable}\n"
 
