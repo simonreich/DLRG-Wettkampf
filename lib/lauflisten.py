@@ -22,6 +22,7 @@ from lib import helper
 
 # System
 import random
+import datetime
 
 
 # Sanity Check
@@ -124,6 +125,9 @@ def erstelleLauflisten(fileInputMeldeliste, dataInputStammdatenHeader, fileOutpu
                 dataInput[rownum][cellnum] = rowName
             cellnum += 1
         rownum += 1
+
+    # Nach Datum Geburtstag sortieren
+    dataInput = sorted (dataInput, key=lambda x:datetime.datetime.strptime(x[3],"%d.%m.%Y"), reverse=True)
             
 
     ######################################################
