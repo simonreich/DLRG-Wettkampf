@@ -33,25 +33,35 @@ Das Programm erstellt nach jedem Arbeitsschritt entweder eine csv-Tabelle
             |                                    |                                   |
             V                                    V                                   V
 +------------------------+          +--------------------------+         +-----------------------+
-| 6)                     |          |  3)                      |         | 4)                    |
+| 7)                     |          |  3)                      |         | 4)                    |
 | ertelle-Stammdaten     |          |  erstelle-Meldeliste-pdf |         | erstelle-Laufliste    |
 |                        |          |                          |         |                       |
 | Output: stammdaten.csv |          |  Output: meldeliste.pdf  |         | Output: laufliste.csv |
-|                        |          |                          |         |         laufliste.pdf |
-+------------------------+          +--------------------------+         |                       |
-            |                                                            +-----------------------+
+|                        |          |                          |         |                       |
++------------------------+          +--------------------------+         +-----------------------+
+            |                                                                        |
             |                                                                        |
             |                                                                        |
             V                                                                        V
 +---------------------------+                                            +-----------------------+
-| 7)                        |                                            | 5)                    |
-| ertelle-Urkunden          |                                            | erstelle-Laufkarte    |
+| 8)                        |                                            | 5)                    |
+| ertelle-Urkunden          |                                            | erstelle-Laufliste-pdf|
 |                           |                                            |                       |
-| Output: ergebnisliste.pdf |                                            | Output: laufkarte.csv |
-|         urkunden.pdf      |                                            |         laufkarte.pdf |
-|         namelist.csv      |                                            |                       |
-|                           |                                            +-----------------------+
-+---------------------------+
+| Output: ergebnisliste.pdf |                                            | Output: laufliste.pdf |
+|         urkunden.pdf      |                                            |                       |
+|         namelist.csv      |                                            +-----------------------+
+|                           |                                                        |
++---------------------------+                                                        |
+                                                                                     |
+                                                                                     V
+                                                                         +-----------------------+
+                                                                         | 6)                    |
+                                                                         | erstelle-Laufkarte    |
+                                                                         |                       |
+                                                                         | Output: laufkarte.csv |
+                                                                         |         laufkarte.pdf |
+                                                                         |                       |
+                                                                         +-----------------------+
 ```
 
 
@@ -95,16 +105,20 @@ verwendeten Templates liegen im Ordner template/
    angepasst werden, wenn nicht genau 5 Bahnen zur Verfügung stehen.
 
 5. Mit
+   $ ./auswertung.py --erstelle-laufliste-pdf
+   wird aus der laufliste eine pdf-Datei erzeugt und ausgehangen werden kann.
+
+6. Mit
    $ ./auswertung.py --erstelle-laufkarte
    werden dann die Laufkarten erstellt. Hier können Zeitnehmer Zeit und 
    Strafpunkte eintragen.
 
-6. Mit
+7. Mit
    $ ./auswertung.py --erstelle-stammdaten
    wird die Meldeliste in die Datei stammdaten.csv kopiert. Hier können nun die 
    tatsächlich geschwommenen Zeiten eingetragen werden.
 
-7. Mit
+8. Mit
    $ ./auswertung.py --erstelle-urkunden
    werden die Punkte berechnet und im Ordner out/ gespeichert.
    Zusätzlich wird mit pdflatex Urkunden und Ergebnislisten erstellt. Die

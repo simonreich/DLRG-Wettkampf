@@ -129,6 +129,8 @@ def printHilfe (programname):
                 "                            ein pdf mittels pdflatex erstellt.\n"
                 "  -el, --erstelle-laufliste    aus der Meldeliste wird eine\n"
                 "                            Laufliste erzeugt.\n"
+                "  -elp, --erstelle-laufliste-pdf    aus der Laufliste wird ei pdf\n"
+                "                            mittels pdflatex erstellt.\n"
                 "  -ek, --erstelle-laufkarte    aus der Laufliste werden die\n"
                 "                            Laufkarten erzeugt.\n"
                 "  -es, --erstelle-stammdaten   aus der Meldeliste wird eine\n"
@@ -214,6 +216,9 @@ def main(argv=None):
                 fileInputWettkampfliste)
             if rv != 0:
                 sys.exit(rv)
+
+        elif(arg == "--erstelle-laufliste-pdf" or
+                arg == "-elp"):
             rv =  lauflisten.erstellePDFLauflisten(
                 fileTemplateLaufliste,
                 fileTemplateOutLaufliste, 
